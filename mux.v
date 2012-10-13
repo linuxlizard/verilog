@@ -4,6 +4,8 @@
 //
 // David Poole 23-Sep-2012
 
+`timescale 1 ns / 10 ps
+
 `include "mux_sel.vh"
 
 module Mux

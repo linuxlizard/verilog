@@ -4,6 +4,8 @@
 //
 // David Poole 23-Sep-2012
 
+`timescale 1 ns / 10 ps
+
 module adder_test;
     reg [7:0] t_operand_8;
     reg [15:0] t_operand_16; 

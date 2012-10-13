@@ -6,6 +6,8 @@
  *
  */
 
+`timescale 1 ns / 10 ps
+
 module CarryLookaheadTest;
     reg [7:0] t_x;
     reg [7:0] t_y;

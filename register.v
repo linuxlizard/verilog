@@ -5,6 +5,8 @@
 //
 // David Poole 22-Sep-2012
 
+`timescale 1 ns / 10 ps
+
 module Register
     #( parameter WIDTH=16 )
     ( input wire clk,

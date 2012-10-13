@@ -6,6 +6,8 @@
 
 //`define INTERNAL_TEST
 
+`timescale 1 ns / 10 ps
+
 module Counter
     ( input wire add,
       input wire reset,

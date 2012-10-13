@@ -22,6 +22,8 @@
  *
  */
 
+`timescale 1 ns / 10 ps
+
 module CarryLookaheadAdder
     ( input wire [7:0] X,
       input wire [7:0] Y,
@@ -30,6 +32,8 @@ module CarryLookaheadAdder
       output wire [7:0] sum,
       output wire carry_out
     );
+
+    wire C1, C2, C3, C4, C5, C6, C7, C8;
 
     assign sum[0] = X[0] ^ Y[0] ^ C0;
 
