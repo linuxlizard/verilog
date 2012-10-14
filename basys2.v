@@ -1,6 +1,8 @@
 `timescale 1 ns / 10 ps
 `define PERIOD 10
 
+`include "mux_sel.vh"
+
 `define ASSERT_EQUALS(x,y) \
         repeat(1)\
         begin\
@@ -16,6 +18,8 @@
 `define BTN_LOAD    4'd2
 `define BTN_ADD     4'd4
 
+`define SWITCH
+
 module basys2;
 
     reg MCLK = 0;
@@ -23,7 +27,7 @@ module basys2;
     reg [3:0] btn = `BTN_ALL_OFF;
 
     wire [7:0] Led;
-    wire [6:0] seg = 7'd0;
+    wire [6:0] seg;
     wire [3:0] an;
     wire dp = 0;
 
@@ -56,21 +60,27 @@ module basys2;
 
         btn = `BTN_ALL_OFF;
         # 10;
+        # 10;
+        # 10;
 
 //        `ASSERT_EQUALS( 1, 1 )
 
         // load register 1 with a value
-        sw = 8'd1;
+        sw = 8'd2;
         btn = `BTN_LOAD; // push load button1
-        #10;
+        #20;
+        #20;
+        #20;
+        #20;
+        sw = 8'd0; // Register2_LSB
         btn = `BTN_ALL_OFF;  // release all buttons
-        #10;
+        #20;
         
         // push add
         btn = `BTN_ADD; 
-         #10;
+         #20;
         btn = `BTN_ALL_OFF; 
-         #10;
+        #80;
 
 
         $display( "seg=", seg );
@@ -81,6 +91,36 @@ module basys2;
         #10;
         $display( "seg=", seg );
         #10;
+
+        // push add again
+        btn = `BTN_ADD; 
+         #20;
+        btn = `BTN_ALL_OFF; 
+        #80;
+
+        $display( "seg=", seg );
+        #10;
+
+
+        // set switches to display counter
+        $display( "set switches to mux counter value" );
+        sw = `MUX_SEL_COUNTER_VALUE; 
+        #80;
+
+        $display( "seg=", seg );
+        #10;
+
+        $display( "set switches to LSB " );
+        sw = `MUX_SEL_REGISTER_2_LSB; 
+        #80;
+        $display( "seg=", seg );
+        #10;
+
+        // reset
+        btn = `BTN_RESET; 
+         #20;
+        btn = `BTN_ALL_OFF; 
+        #80;
 
         # 100;
         $finish;
