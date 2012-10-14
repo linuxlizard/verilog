@@ -27,7 +27,7 @@ module basys2;
     wire [7:0] Led;
     wire [6:0] seg;
     wire [3:0] an;
-    wire dp = 0;
+    wire dp;
 
     top_adder_accumulator run_adder_acc
         (.MCLK(MCLK),
@@ -115,13 +115,11 @@ module basys2;
         #10;
 
         // reset
-        btn = `BTN_RESET; 
-         #20;
-        btn = `BTN_ALL_OFF; 
-        #80;
+ //       btn = `BTN_RESET; 
+ //        #20;
+ //       btn = `BTN_ALL_OFF; 
+ //       #80;
 
-        # 100;
-        $finish;
     end
 
 endmodule
