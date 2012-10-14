@@ -65,7 +65,7 @@ module CarryLookaheadAdder
     
     initial
     begin
-        $display("hello");
+        $display("hello from carry_lookahead");
     end
 
 endmodule
