@@ -8,10 +8,10 @@ module top_adder_accumulator( MCLK, Led, sw, seg, dp, an, btn );
     input [7:0] sw;
     input [3:0] btn;
 
-    output reg [7:0] Led;
-    output reg [6:0] seg;
-    output reg dp;
-    output reg [3:0] an;
+    output wire [7:0] Led;
+    output wire [6:0] seg;
+    output wire dp;
+    output wire [3:0] an;
 
     reg int_reset;
     wire int_load;
@@ -57,12 +57,18 @@ module top_adder_accumulator( MCLK, Led, sw, seg, dp, an, btn );
     begin
         int_reset <= btn[0];
 
-        seg <= int_seg;
-        an <= int_an;
-        dp <= int_dp;
+//        seg = int_seg;
+//        an = int_an;
+//        dp = int_dp;
 
-        Led <= 8'd0;
+//        Led <= 8'd0;
     end
+
+    assign seg = int_seg;
+    assign an = int_an;
+    assign dp = int_dp;
+
+    assign Led = 8'd0;
 
 endmodule
 
