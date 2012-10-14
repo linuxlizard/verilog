@@ -12,7 +12,7 @@ module digits_to_7seg( mclk, digit0_in, byte_in, seg, an, dp );
 
     always @(posedge mclk)
     begin
-        seg <= 6'd0;
+        seg <= byte_in;
     end
 
 endmodule
