@@ -10,7 +10,7 @@ FLAGS=-Wall
 all : $(ALL)
 
 basys2 : basys2.v tb.v adder.v adder_acc.v mux.v counter.v register.v\
- carry_lookahead.v stub_digits_to_7seg.v
+ carry_lookahead.v stub_digits_to_7seg.v edge_to_pulse.v
 	iverilog $(FLAGS) -o $@ $^
 
 test_edge_to_pulse : test_edge_to_pulse.v edge_to_pulse.v
