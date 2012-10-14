@@ -13,22 +13,9 @@ module top_adder_accumulator( MCLK, Led, sw, seg, dp, an, btn );
     output reg dp;
     output reg [3:0] an;
 
-//    reg t_clk = 0;
-//    reg t_reset = 1;
-//    reg t_enable = 0;
-//    reg [1:0] t_signal_in;
-//    wire [1:0] t_signal_out;
-
-//    top uut
-//        (.Clock(t_clk),
-//         .Reset(t_reset),
-//         .Enable(t_enable),
-//         .Signal_in(t_signal_in),
-//         .Signal_out(t_signal_out) );
-
-    reg int_load = 0;
-    reg int_reset = 0;
-    reg int_add = 0;
+    reg int_reset;
+    wire int_load;
+    wire int_add;
 
     wire [6:0] int_seg;
     wire [3:0] int_an;
@@ -52,12 +39,23 @@ module top_adder_accumulator( MCLK, Led, sw, seg, dp, an, btn );
           .seg(int_seg),
           .an(int_an),
           .dp(int_dp) );
+
+    edge_to_pulse load_pulse
+        (.clk(MCLK),
+         .reset(int_reset),
+         .edge_in(btn[1]),
+         .pulse_out(int_load) );
+
+    edge_to_pulse add_pulse
+        (.clk(MCLK),
+         .reset(int_reset),
+         .edge_in(btn[2]),
+         .pulse_out(int_add) );
+
           
     always @(posedge MCLK)
     begin
         int_reset <= btn[0];
-        int_load <= btn[1];
-        int_add <= btn[2];
 
         seg <= int_seg;
         an <= int_an;
@@ -65,31 +63,6 @@ module top_adder_accumulator( MCLK, Led, sw, seg, dp, an, btn );
 
         Led <= 8'd0;
     end
-
-
-//    always
-//    begin
-//        #`PERIOD t_clk = ~t_clk;
-//    end
-
-//    initial
-//    begin
-//        $display("Hello, world");
-//        t_reset = 1;
-//        t_enable = 0;
-//        t_signal_in = 0;
-//        # 15
-//
-//        t_reset = 0;
-//        # 10;
-//
-//        t_signal_in = 2'b11;
-//        t_enable = 1;
-//        # 10;
-//
-//        t_enable = 0;
-//        # 10;
-//    end
 
 endmodule
 
