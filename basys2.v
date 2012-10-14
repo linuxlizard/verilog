@@ -18,8 +18,6 @@
 `define BTN_LOAD    4'd2
 `define BTN_ADD     4'd4
 
-`define SWITCH
-
 module basys2;
 
     reg MCLK = 0;
