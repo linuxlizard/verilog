@@ -13,7 +13,7 @@ module Mux
       input wire [7:0] counter_value,
       input wire [7:0] register_2_msb,
       input wire [7:0] register_2_lsb,
-      input wire [2:0] sel,
+      input wire [1:0] sel,
 
       output reg [7:0] data_out
     );

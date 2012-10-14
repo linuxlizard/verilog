@@ -12,7 +12,7 @@ module mux_test;
     reg [7:0] t_counter_out;
     reg [7:0] t_register_2_msb;
     reg [7:0] t_register_2_lsb;
-    reg [2:0] t_output_sel;
+    reg [1:0] t_output_sel;
 
     wire [7:0] mux_output;
 

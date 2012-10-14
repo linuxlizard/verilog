@@ -13,7 +13,7 @@ module AdderAccumulator
       input wire clock,
       input wire [7:0] data_in,
 
-      input wire [2:0] output_sel,
+      input wire [1:0] output_sel,
 
       output wire [7:0] data_out
     );

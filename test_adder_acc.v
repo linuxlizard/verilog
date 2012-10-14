@@ -14,7 +14,7 @@ module adder_accum_testbench;
     reg t_reset;
     reg t_clk;
     reg [7:0] t_data_in;
-    reg [2:0] t_output_sel;
+    reg [1:0] t_output_sel;
 
     wire [7:0] t_data_out;
 
