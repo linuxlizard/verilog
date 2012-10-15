@@ -1,5 +1,6 @@
 `timescale 1 ns / 10 ps
 `define PERIOD 10
+`define HALF_PERIOD 5
 
 `include "mux_sel.vh"
 
@@ -38,10 +39,26 @@ module basys2;
          .dp(dp),
          .btn(btn) );
 
+    task run_add;
+    begin
+        // push add
+        btn = `BTN_ADD; 
+        #`PERIOD;
+
+        btn = `BTN_ALL_OFF; 
+        // delay for several periods; we have a lot of clocks to percolate
+        // through
+        #80;
+    end
+    endtask
+
+    /* This is the clock */
     always
     begin
-        #`PERIOD MCLK = ~MCLK;
+        #`HALF_PERIOD MCLK = ~MCLK;
     end
+
+    integer i;
 
     initial
     begin
@@ -49,17 +66,17 @@ module basys2;
         $dumpfile("basys2.vcd");
         $dumpvars(0,basys2);
 
-        # 5;
+        sw = 8'd0;
+        # `PERIOD;
 
         // push & release reset button
-        sw = 8'd1;
         btn = `BTN_RESET; // push reset button0
-        # 10;
+        #`PERIOD;
 
         btn = `BTN_ALL_OFF;
-        # 10;
-        # 10;
-        # 10;
+        #`PERIOD;
+        #`PERIOD;
+        #`PERIOD;
 
 //        `ASSERT_EQUALS( 1, 1 )
 
@@ -75,30 +92,30 @@ module basys2;
         #20;
         
         // push add
-        btn = `BTN_ADD; 
-         #20;
-        btn = `BTN_ALL_OFF; 
-        #80;
+//        btn = `BTN_ADD; 
+//         #20;
+//        btn = `BTN_ALL_OFF; 
+//        #80;
+        run_add;
 
-
         $display( "seg=", seg );
-        #10;
+        #`PERIOD;
         $display( "seg=", seg );
-        #10;
+        #`PERIOD;
         $display( "seg=", seg );
-        #10;
+        #`PERIOD;
         $display( "seg=", seg );
-        #10;
+        #`PERIOD;
 
         // push add again
-        btn = `BTN_ADD; 
-         #20;
-        btn = `BTN_ALL_OFF; 
-        #80;
+//        btn = `BTN_ADD; 
+//         #20;
+//        btn = `BTN_ALL_OFF; 
+//        #80;
+        run_add;
 
         $display( "seg=", seg );
-        #10;
-
+        #`PERIOD;
 
         // set switches to display counter
         $display( "set switches to mux counter value" );
@@ -106,13 +123,28 @@ module basys2;
         #80;
 
         $display( "seg=", seg );
-        #10;
+        #`PERIOD;
 
         $display( "set switches to LSB " );
         sw = `MUX_SEL_REGISTER_2_LSB; 
         #80;
-        $display( "seg=", seg );
-        #10;
+        $display( "seg=%d", seg );
+        #`PERIOD;
+
+        /* Multiple adds */
+        for( i=0 ; i<300 ; i=i+1 ) 
+        begin
+            run_add;
+
+            sw = `MUX_SEL_REGISTER_2_LSB; 
+            # `PERIOD;
+            $display( "total_LSB=0x%x", seg );
+
+            sw = `MUX_SEL_REGISTER_2_MSB; 
+            # `PERIOD;
+            $display( "total_MSB=0x%x", seg );
+
+        end
 
         // reset
  //       btn = `BTN_RESET; 
@@ -120,6 +152,7 @@ module basys2;
  //       btn = `BTN_ALL_OFF; 
  //       #80;
 
+        $finish;
     end
 
 endmodule
