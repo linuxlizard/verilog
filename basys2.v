@@ -59,6 +59,9 @@ module basys2;
     end
 
     integer i;
+    integer lsb, msb;
+    integer current_total;
+    integer sanity_sum;
 
     initial
     begin
@@ -78,7 +81,7 @@ module basys2;
         #`PERIOD;
         #`PERIOD;
 
-//        `ASSERT_EQUALS( 1, 1 )
+        `ASSERT_EQUALS( 1, 1 )
 
         // load register 1 with a value
         sw = 8'd2;
@@ -92,11 +95,9 @@ module basys2;
         #20;
         
         // push add
-//        btn = `BTN_ADD; 
-//         #20;
-//        btn = `BTN_ALL_OFF; 
-//        #80;
         run_add;
+        sanity_sum = 0;
+        sanity_sum = sanity_sum + 2;
 
         $display( "seg=", seg );
         #`PERIOD;
@@ -113,6 +114,7 @@ module basys2;
 //        btn = `BTN_ALL_OFF; 
 //        #80;
         run_add;
+        sanity_sum = sanity_sum + 2;
 
         $display( "seg=", seg );
         #`PERIOD;
@@ -140,9 +142,19 @@ module basys2;
             # `PERIOD;
             $display( "total_LSB=0x%x", seg );
 
+            lsb = seg;
+
             sw = `MUX_SEL_REGISTER_2_MSB; 
             # `PERIOD;
             $display( "total_MSB=0x%x", seg );
+
+            msb = seg;
+
+            sanity_sum = sanity_sum + 2;
+            current_total = (msb<<8) | lsb;
+            $display( "sanity=%d current_total=%d", sanity_sum, current_total );
+
+            `ASSERT_EQUALS(sanity_sum, current_total);
 
         end
 
