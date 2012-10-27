@@ -15,20 +15,29 @@ module FREQ_DIV
 
       output wire clk256 );
 
-    reg [31:0 ]current_value = 0;
+    reg [31:0] current_value = 0;
+    reg int_clk_out = 1'b0;
+
 
     always @(posedge clk, posedge reset )
     begin
         if( reset ) 
         begin
             current_value <= 0;
-            clk256 <= 1'b0;
+//            clk256 <= 1'b0;
         end
         else 
         begin
             current_value <= current_value+1;
+            if( current_value == divider ) 
+            begin
+                current_value <= 0;
+                int_clk_out <= ~int_clk_out;
+            end
         end
     end
+    
+    assign clk256 = int_clk_out;
 
 endmodule
 

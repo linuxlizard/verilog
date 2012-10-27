@@ -31,7 +31,7 @@ module test_freq_div;
         $dumpfile("test_freq_div.vcd");
         $dumpvars(0,test_freq_div);
 
-        $monitor( "%d",clk_out );
+        $monitor( "%d %d",clk_out, $time );
         @(negedge mclk);
         reset = ~reset;
         # `PERIOD;
