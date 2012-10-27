@@ -154,7 +154,7 @@ module basys2;
             current_total = (msb<<8) | lsb;
             $display( "sanity=%d current_total=%d", sanity_sum, current_total );
 
-            `ASSERT_EQUALS(sanity_sum, current_total);
+            `ASSERT_EQUALS(sanity_sum, current_total)
 
         end
 
