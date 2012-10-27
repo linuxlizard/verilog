@@ -3,7 +3,7 @@
 # davep 13-Oct-2012
 
 ALL=test_register test_counter test_mux test_carry_lookahead test_adder\
-    test_adder_acc basys2 test_edge_to_pulse test_freq_div
+    test_adder_acc basys2 test_edge_to_pulse test_freq_div test_time_gen
 
 FLAGS=-Wall
 
@@ -11,6 +11,9 @@ all : $(ALL)
 
 basys2 : basys2.v tb.v adder.v adder_acc.v mux.v counter.v register.v\
  carry_lookahead.v stub_digits_to_7seg.v edge_to_pulse.v
+	iverilog $(FLAGS) -o $@ $^
+
+test_time_gen : time_gen.v test_time_gen.v
 	iverilog $(FLAGS) -o $@ $^
 
 test_freq_div : freq_div.v test_freq_div.v
