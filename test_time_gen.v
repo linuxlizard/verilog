@@ -5,14 +5,15 @@
 // Time Generation test bench
 
 `timescale 1 ns / 10 ps
-`define PERIOD 10
-`define HALF_PERIOD 5
+
+`define PERIOD 20   // 50Mhz at timescale=1ns
+`define HALF_PERIOD 10
 
 module test_time_gen;
     reg mclk = 1'b0;
     reg t_reset = 1'b1;
 
-    reg t_fast_mode=1'b0;
+    reg t_fast_mode=1'b1;
 
     wire t_one_second;
     wire t_one_minute;
@@ -37,11 +38,12 @@ module test_time_gen;
         $dumpvars(0,test_time_gen);
 
         $monitor( "%d %d %d",t_one_second, t_one_minute, $time );
+        # `PERIOD;
         @(negedge mclk);
         t_reset = ~t_reset;
         # `PERIOD;
 
-        # 1000;
+        # 100000;
         $finish;
     end
 
