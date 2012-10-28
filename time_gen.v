@@ -19,6 +19,23 @@ module TIME_GEN
 
     reg int_one_minute = 1'b0;
 
+//    reg seconds_edge; 
+//    wire seconds_pulse;
+//    reg minutes_edge;
+//    wire minutes_pulse;
+
+//    edge_to_pulse seconds_edge_to_pulse
+//        (.clk(clk256),
+//         .reset(reset),
+//         .edge_in(sec_counter[7]),
+//         .pulse_out(seconds_pulse) );
+//
+//    edge_to_pulse minutes_edge_to_pulse
+//        (.clk(clk256),
+//         .reset(reset),
+//         .edge_in(minutes_edge),
+//         .pulse_out(minutes_pulse) );
+
     // 256Hz means we can count once per clock in a 9-bit counter. The overflow
     // (9th) bit is our one second clock.
     always @(posedge clk256, posedge reset )
@@ -29,15 +46,18 @@ module TIME_GEN
         end
         else 
         begin
-            sec_counter <= sec_counter + 9'b000000001; 
+            sec_counter <= sec_counter + 9'b00000001; 
         end
     end
+
+//    seconds_edge <= sec_counter[7];
 
     // Want to increment the minute counter every second. Rather than adding a
     // a compare on the sec_counter for 256*60, we will watch the 7th bit of
     // the sec_counter (256). When the 7th bit transitions (once a second) we
     // will udate our min_counter.
     always @(posedge reset, posedge sec_counter[7])
+//    always @(posedge reset, posedge sec_counter[8], negedge sec_counter[8] )
     begin
         if( reset ) 
         begin
@@ -46,11 +66,15 @@ module TIME_GEN
         end
         else 
         begin
-            min_counter <= min_counter + 1;
-            if( min_counter >= 60 ) 
+            if( min_counter < 59 ) 
+            begin
+                min_counter <= min_counter + 1;
+                int_one_minute <= 0;
+            end
+            else 
             begin
                 min_counter <= 0;
-                int_one_minute <= ~int_one_minute;
+                int_one_minute <= 1;
             end
         end
      end
@@ -58,8 +82,8 @@ module TIME_GEN
     // if fast mode is enabled, minutes will become seconds and seconds will
     // become 1/4 seconds
     // TODO need to ask what to really do about seconds in fastmode
-    assign one_second = fast_mode ? sec_counter[6] : sec_counter[8];
-    assign one_minute = fast_mode ? sec_counter[8] : int_one_minute;
+    assign one_second = fast_mode ? sec_counter[6] : sec_counter[7];
+    assign one_minute = fast_mode ? sec_counter[7] : int_one_minute;
 
 endmodule
 
