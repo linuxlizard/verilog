@@ -3,17 +3,20 @@
 # davep 13-Oct-2012
 
 ALL=test_register test_counter test_mux test_carry_lookahead test_adder\
-    test_adder_acc basys2 test_edge_to_pulse test_freq_div test_time_gen
+    test_adder_acc basys2 test_edge_to_pulse test_freq_div test_time_gen\
+    test_bcd_clock
 
-FLAGS=-Wall
+FLAGS=-Wall -D SIMULATION=1
 
 all : $(ALL)
 
-basys2 : basys2.v tb.v adder.v adder_acc.v mux.v counter.v register.v\
- carry_lookahead.v stub_digits_to_7seg.v edge_to_pulse.v
+basys2 : time_gen.v freq_div.v al_controller.v stub_digits_to_7seg.v basys2.v 
 	iverilog $(FLAGS) -o $@ $^
 
-test_time_gen : time_gen.v test_time_gen.v
+test_bcd_clock : bcd_clock.v test_bcd_clock.v
+	iverilog $(FLAGS) -o $@ $^
+
+test_time_gen : time_gen.v edge_to_pulse.v test_time_gen.v
 	iverilog $(FLAGS) -o $@ $^
 
 test_freq_div : freq_div.v test_freq_div.v
