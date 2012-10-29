@@ -13,7 +13,7 @@ module test_time_gen;
     reg mclk = 1'b0;
     reg t_reset = 1'b1;
 
-    reg t_fast_mode=1'b1;
+    reg t_fast_mode=1'b0;
 
     wire t_one_second;
     wire t_one_minute;
@@ -43,7 +43,7 @@ module test_time_gen;
         t_reset = ~t_reset;
         # `PERIOD;
 
-        # 100000;
+        # 1000000;
         $finish;
     end
 
