@@ -10,7 +10,7 @@ FLAGS=-Wall -D SIMULATION=1
 
 all : $(ALL)
 
-basys2 : time_gen.v freq_div.v al_controller.v stub_digits_to_7seg.v basys2.v 
+basys2 : bcd_clock.v time_gen.v freq_div.v al_controller.v stub_digits_to_7seg.v basys2.v 
 	iverilog $(FLAGS) -o $@ $^
 
 test_bcd_clock : bcd_clock.v test_bcd_clock.v
