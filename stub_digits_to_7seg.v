@@ -1,10 +1,10 @@
 `timescale 1 ns / 10 ps
 
-module digits_to_7seg( mclk, digit0_in, byte_in, seg, an, dp );
+module stub_digits_to_7seg( mclk, rst, word_in, seg, an, dp );
 
     input wire mclk;
-    input wire [3:0] digit0_in;
-    input wire [7:0] byte_in;
+    input wire rst;
+    input wire [15:0] word_in;
 
     output reg [6:0] seg;
     output reg [3:0] an;
@@ -12,7 +12,9 @@ module digits_to_7seg( mclk, digit0_in, byte_in, seg, an, dp );
 
     always @(posedge mclk)
     begin
-        seg <= byte_in;
+        seg <= word_in;
+        an <= 4'b1111;
+        dp <= 1'b1;
     end
 
 endmodule
