@@ -23,10 +23,10 @@ module bcd_clock( input add_one,
                   
                   );
 
-    reg [3:0] int_ms_hour;
-    reg [3:0] int_ls_hour;
-    reg [3:0] int_ms_min;
-    reg [3:0] int_ls_min;
+    reg [3:0] int_ms_hour=0;
+    reg [3:0] int_ls_hour=0;
+    reg [3:0] int_ms_min=0;
+    reg [3:0] int_ls_min=0;
 
     always @(posedge add_one) 
     begin
