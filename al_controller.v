@@ -44,8 +44,18 @@ module AL_Controller ( MCLK, Led, sw, seg, dp, an, btn );
     wire [3:0] int_an;
     wire int_dp;
 
-    reg [7:0] second_counter = 0;
-    reg [7:0] minute_counter = 0;
+//    reg [7:0] second_counter = 0;
+//    reg [7:0] minute_counter = 0;
+
+    reg [3:0] bcd_ms_hour = 0;
+    reg [3:0] bcd_ls_hour = 0;
+    reg [3:0] bcd_ms_min = 0;
+    reg [3:0] bcd_ls_min = 0;
+
+    wire [3:0] bcd_ms_hour_out;
+    wire [3:0] bcd_ls_hour_out;
+    wire [3:0] bcd_ms_min_out;
+    wire [3:0] bcd_ls_min_out;
 
 
 `ifdef SIMULATION
@@ -67,14 +77,28 @@ module AL_Controller ( MCLK, Led, sw, seg, dp, an, btn );
          .one_second(int_one_second),
          .one_minute(int_one_minute) );
 
+    /* increments current time by one minute */
+    bcd_clock run_bcd_clock
+        (.add_one(int_one_minute),
+         .ms_hour(bcd_ms_hour),
+         .ls_hour(bcd_ls_hour),
+         .ms_min(bcd_ms_min),
+         .ls_min(bcd_ls_min),
+         
+         .out_ms_hour(bcd_ms_hour_out),
+         .out_ls_hour(bcd_ls_hour_out),
+         .out_ms_min(bcd_ms_min_out),
+         .out_ls_min(bcd_ls_min_out)
+    );
+
 `ifdef SIMULATION
     stub_digits_to_7seg run_digits_to_7seg 
 `else
-    digits_to_7seg run_digits_to_7seg 
+    hex_to_7seg run_digits_to_7seg 
 `endif
         ( .rst(int_reset),
           .mclk(MCLK),
-          .word_in({ 8'h00,second_counter}),
+          .word_in( {bcd_ms_hour,bcd_ls_hour,bcd_ms_min,bcd_ls_min} ),
           .seg(int_seg),
           .an(int_an),
           .dp(int_dp) );
@@ -83,14 +107,8 @@ module AL_Controller ( MCLK, Led, sw, seg, dp, an, btn );
     assign an = int_an;
     assign dp = int_dp;
 
-//`define SIMULATION 1
-`ifdef SIMULATION
-    assign Led ={ minute_counter }; 
-`else
-    assign Led ={ minute_counter }; 
-//    assign Led ={ int_one_minute,int_one_minute,int_one_minute,int_one_minute,
-//                  int_one_second,int_one_second,int_one_second,int_one_second}; 
-`endif
+    assign Led ={ int_one_minute,int_one_minute,int_one_minute,int_one_minute,
+                  int_one_second,int_one_second,int_one_second,int_one_second}; 
 
     always @(posedge MCLK)
     begin
@@ -98,6 +116,25 @@ module AL_Controller ( MCLK, Led, sw, seg, dp, an, btn );
         int_fast_mode <= sw[1];
     end
 
+    // reassign output of BCD hour/minute clock +1 back to current value
+    always @(posedge int_reset, posedge MCLK )
+    begin
+        if( int_reset ) 
+        begin
+            bcd_ms_hour <= 0;
+            bcd_ls_hour <= 0;
+            bcd_ms_min <= 0;
+            bcd_ls_min <= 0;
+        end
+        else 
+        begin
+            bcd_ms_hour <= bcd_ms_hour_out;
+            bcd_ls_hour <= bcd_ls_hour_out;
+            bcd_ms_min <= bcd_ms_min_out;
+            bcd_ls_min <= bcd_ls_min_out;
+        end
+    end
+/*
     always @(posedge int_reset, posedge int_one_second )
     begin
         if( int_reset ) 
@@ -137,6 +174,7 @@ module AL_Controller ( MCLK, Led, sw, seg, dp, an, btn );
             end
         end
     end
+*/
 
 endmodule
 
