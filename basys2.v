@@ -54,7 +54,8 @@ module basys2;
 
         $monitor( "%d Led=%x seg=%d",$time, Led, seg );
 
-        sw = 8'd0;
+        sw = 8'd2; // turn on fast mode
+//        sw = 8'd0;
         btn = 4'd0;
         # `PERIOD;
 
