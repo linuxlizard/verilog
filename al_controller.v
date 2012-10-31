@@ -8,7 +8,6 @@
 
 `timescale 1 ns / 10 ps
 
-/*
 module AL_Controller
     ( input  MCLK,
       input  [7:0] sw,
@@ -19,18 +18,17 @@ module AL_Controller
       output  dp,
       output  [3:0] an
     );
-*/
 
-module AL_Controller ( MCLK, Led, sw, seg, dp, an, btn );
+//module AL_Controller ( MCLK, Led, sw, seg, dp, an, btn );
 
-    input MCLK; 
-    input [7:0] sw;
-    input [3:0] btn;
-
-    output wire [7:0] Led;
-    output wire [6:0] seg;
-    output wire dp;
-    output wire [3:0] an;
+//    input MCLK; 
+//    input [7:0] sw;
+//    input [3:0] btn;
+//
+//    output wire [7:0] Led;
+//    output wire [6:0] seg;
+//    output wire dp;
+//    output wire [3:0] an;
 
     wire freq_div_out_time_gen_in;
 
@@ -99,6 +97,7 @@ module AL_Controller ( MCLK, Led, sw, seg, dp, an, btn );
         ( .rst(int_reset),
           .mclk(MCLK),
           .word_in( {bcd_ms_hour,bcd_ls_hour,bcd_ms_min,bcd_ls_min} ),
+          .display_mask_in(4'b1111),
           .seg(int_seg),
           .an(int_an),
           .dp(int_dp) );
@@ -107,13 +106,33 @@ module AL_Controller ( MCLK, Led, sw, seg, dp, an, btn );
     assign an = int_an;
     assign dp = int_dp;
 
-    assign Led ={ int_one_minute,int_one_minute,int_one_minute,int_one_minute,
-                  int_one_second,int_one_second,int_one_second,int_one_second}; 
+//    assign Led ={ int_one_minute,int_one_minute,int_one_minute,int_one_minute,
+//                  int_one_second,int_one_second,int_one_second,int_one_second}; 
 
     always @(posedge MCLK)
     begin
         int_reset <= btn[0];
         int_fast_mode <= sw[1];
+    end
+
+    // Want the LED to rotate left to right showing the passage of seconds
+    reg [7:0] led_value = 8'h01;
+    assign Led = led_value;
+
+//    assign Led ={ int_one_minute,int_one_minute,int_one_minute,int_one_minute,
+//                  int_one_second,int_one_second,int_one_second,int_one_second}; 
+
+    always @( posedge int_reset, posedge int_one_second)
+    begin
+        if( int_reset )
+        begin
+            led_value <= 8'h01;
+        end
+        else 
+        begin
+            // rotate bit left
+            led_value <= { led_value[6:0], led_value[7] };
+        end
     end
 
     // reassign output of BCD hour/minute clock +1 back to current value
@@ -134,47 +153,5 @@ module AL_Controller ( MCLK, Led, sw, seg, dp, an, btn );
             bcd_ls_min <= bcd_ls_min_out;
         end
     end
-/*
-    always @(posedge int_reset, posedge int_one_second )
-    begin
-        if( int_reset ) 
-        begin
-            second_counter <= 0;
-        end
-        else 
-        begin
-            if( second_counter <= 58 )
-            begin
-                second_counter <= second_counter+1;
-            end
-            else
-            begin
-                second_counter <= 0;
-            end
-        end
-    end
-
-    always @(posedge int_reset, posedge int_one_minute )
-    begin
-        if( int_reset ) 
-        begin
-            minute_counter <= 0;
-        end
-        else 
-        begin
-            if( minute_counter <= 58 )
-            begin
-                $display( "minute +1 = %d", minute_counter+1 );
-                minute_counter <= minute_counter+1;
-            end
-            else
-            begin
-                $display( "minute reset" );
-                minute_counter <= 0;
-            end
-        end
-    end
-*/
-
 endmodule
 
