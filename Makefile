@@ -4,7 +4,7 @@
 
 ALL=test_register test_counter test_mux test_carry_lookahead test_adder\
     test_adder_acc basys2 test_edge_to_pulse test_freq_div test_time_gen\
-    test_bcd_clock
+    test_bcd_clock test_kbd_if
 
 FLAGS=-Wall -D SIMULATION=1
 
@@ -14,6 +14,9 @@ basys2 : bcd_clock.v time_gen.v freq_div.v al_controller.v stub_digits_to_7seg.v
 	iverilog $(FLAGS) -o $@ $^
 
 test_bcd_clock : bcd_clock.v test_bcd_clock.v
+	iverilog $(FLAGS) -o $@ $^
+
+test_kbd_if : test_kbd_if.v kbd_if.v PS2_Keyboard.v
 	iverilog $(FLAGS) -o $@ $^
 
 test_time_gen : time_gen.v edge_to_pulse.v test_time_gen.v
