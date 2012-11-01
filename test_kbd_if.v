@@ -48,14 +48,47 @@ module test_kbd_if;
 
 //    assign key_buffer = int_key_buffer;
 
+    // Mealy state machine
     // simple way to shift in a new keycode whenever a value key is pushed
-    always @(posedge(MCLK),int_key) 
+`define SHIFT_STATE_START       0
+`define SHIFT_STATE_READING_KEY 1
+`define SHIFT_STATE_WAITING     2
+
+    reg [3:0] shift_state=`SHIFT_STATE_START;
+    reg [3:0] shift_next_state=`SHIFT_STATE_START;
+
+    always @(posedge(MCLK))
     begin
-        if( int_key == 8'h0 )
-            int_shift <= 0;
-        else 
-            int_shift <= 1;
+        shift_state <= shift_next_state;
     end
+
+    always @(shift_state,int_key) 
+    begin
+        case( shift_state )
+            `SHIFT_STATE_START :
+                begin
+                    int_shift <= 0;
+                    if( int_key != 8'h0 )
+                        shift_next_state <= `SHIFT_STATE_READING_KEY;
+                end
+
+            `SHIFT_STATE_READING_KEY :
+                begin
+                    int_shift <= 1;
+                    shift_next_state <= `SHIFT_STATE_WAITING;
+                end
+
+            `SHIFT_STATE_WAITING :
+                begin
+                    int_shift <= 0;
+                    shift_next_state <= `SHIFT_STATE_START;
+                end
+
+            default :
+                shift_next_state = `SHIFT_STATE_START;
+        endcase
+    end
+
 
     initial
     begin
