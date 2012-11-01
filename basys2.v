@@ -31,10 +31,15 @@ module basys2;
 
     reg t_reset;
 
+    reg PS2C;
+    reg PS2D;
+
     AL_Controller run_alarm_clock
         ( .MCLK(MCLK),
           .sw(sw),
           .btn(btn),
+          .PS2C(PS2C),
+          .PS2D(PS2D),
           .Led(Led),
           .seg(seg),
           .an(an),
