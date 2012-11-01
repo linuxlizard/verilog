@@ -82,11 +82,14 @@ module AL_Controller
 //    assign Led = key_code;
 //    assign seg = key_code;
     
+`ifdef SIMULATION
+`else
     PS2_Keyboard ps2kbd
         (.ck(MCLK),
          .PS2C(PS2C),
          .PS2D(PS2D),
          .key_code_out(Led) );
+`endif
 
 //    always @(posedge int_reset, posedge MCLK)
 //    begin
