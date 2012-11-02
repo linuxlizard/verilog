@@ -13,6 +13,9 @@ module AL_Controller
       input  [7:0] sw,
       input  [3:0] btn,
 
+      input PS2C,
+      input PS2D,
+
       output  [7:0] Led,
       output  [6:0] seg,
       output  dp,
@@ -75,6 +78,24 @@ module AL_Controller
          .one_second(int_one_second),
          .one_minute(int_one_minute) );
 
+    reg [7:0] key_code;
+//    assign Led = key_code;
+//    assign seg = key_code;
+    
+    PS2_Keyboard ps2kbd
+        (.ck(MCLK),
+         .PS2C(PS2C),
+         .PS2D(PS2D),
+         .key_code_out(Led) );
+
+//    always @(posedge int_reset, posedge MCLK)
+//    begin
+//        if( int_reset ) 
+//            Led <= 8'b00000000;
+//        else
+//            Led <= key_code;
+//    end
+
     /* increments current time by one minute */
     bcd_clock run_bcd_clock
         (.add_one(int_one_minute),
@@ -117,7 +138,7 @@ module AL_Controller
 
     // Want the LED to rotate left to right showing the passage of seconds
     reg [7:0] led_value = 8'h01;
-    assign Led = led_value;
+//    assign Led = led_value;
 
 //    assign Led ={ int_one_minute,int_one_minute,int_one_minute,int_one_minute,
 //                  int_one_second,int_one_second,int_one_second,int_one_second}; 
