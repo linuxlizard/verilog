@@ -12,7 +12,7 @@ module PS2_Keyboard
     ( input ck,
       input PS2C,
       input PS2D,
-      output reg [7:0] key_code_out );
+      output reg [7:0] ps2_key_code );
 
     reg [31:0] key_counter = 0;
 
@@ -23,25 +23,25 @@ module PS2_Keyboard
         // run a simple set of keypresses in a loop
         case( key_counter%20 )
                 // press
-                0,1 : key_code_out <= `KP_1; 
+                0,1,2 : ps2_key_code <= `KP_1; 
                 // release
-                2 : key_code_out <= `KP_KEY_RELEASED;
-                3 : key_code_out <= `KP_1; 
+                3,4,5 : ps2_key_code <= `KP_KEY_RELEASED;
+                6,7,8 : ps2_key_code <= `KP_1; 
 
-                4 : key_code_out <= 0;
+                9,10,11 : ps2_key_code <= 0;
 
                 // press
-                5,6 : key_code_out <= `KP_2; 
-                // release
-                7 : key_code_out <= `KP_KEY_RELEASED;
-                8 : key_code_out <= `KP_2; 
-//               10,11,12,13,14: key_code_out <= `KP_2;
-//               15,16,17,18,19: key_code_out <= 0;
-//                9,10: key_code_out <= `KP_3;
-//               11,12: key_code_out <= 0;
-//               13,14: key_code_out <= `KP_4;
-//               15,16: key_code_out <= 0;
-            default : key_code_out <= 8'h00;
+//                5,6 : ps2_key_code <= `KP_2; 
+//                // release
+//                7 : ps2_key_code <= `KP_KEY_RELEASED;
+//                8 : ps2_key_code <= `KP_2; 
+//               10,11,12,13,14: ps2_key_code <= `KP_2;
+//               15,16,17,18,19: ps2_key_code <= 0;
+//                9,10: ps2_key_code <= `KP_3;
+//               11,12: ps2_key_code <= 0;
+//               13,14: ps2_key_code <= `KP_4;
+//               15,16: ps2_key_code <= 0;
+            default : ps2_key_code <= 8'h00;
         endcase
     end
 
