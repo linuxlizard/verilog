@@ -20,7 +20,7 @@ module AL_Controller
 
       output  reg load_alarm,
       output  reg show_alarm,
-      output  reg shift,
+      output  reg alc_shift,
       output  reg load_new_time
     );
 
@@ -58,7 +58,7 @@ module AL_Controller
             begin
                 load_alarm <= 0;
                 show_alarm <= 0;
-                shift <= 0;
+                alc_shift <= 0;
                 load_new_time <= 0;
                 if( key==`KP_STAR ) 
                     next_state <= `STATE_SHOW_ALARM;
@@ -79,13 +79,13 @@ module AL_Controller
 
             `STATE_KEY_STORE :
             begin
-                shift <= 1;
+                alc_shift <= 1;
                 next_state <= `STATE_KEY_HOLD;
             end
 
             `STATE_KEY_HOLD :
             begin
-                shift <= 0;
+                alc_shift <= 0;
                 if( key==`KP_KEY_RELEASED )
                     next_state <= `STATE_KEY_RELEASE_FINISH;
             end
