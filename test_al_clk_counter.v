@@ -29,6 +29,20 @@ module test_al_clk_counter;
 
     wire [15:0] t_current_time_out;
     
+    wire [15:0] time_reg_out;
+
+//    TimeRegister #(16) current_time_reg 
+//        (.clk(MCLK), 
+//         .reset(t_reset),
+//
+//         .set_time_load(t_load_new_time),
+//         .set_time_value(t_time_in),
+//
+//         .update_time_load(t_one_minute),
+//         .update_time_value(t_current_time_out),
+//
+//         .q(time_reg_out));
+         
     al_clk_counter run_al_clk_counter
         ( .clk256(t_clk256),
           .reset(t_reset),
@@ -57,6 +71,7 @@ module test_al_clk_counter;
         t_load_new_time = 1;
         # `PERIOD;
 
+        t_time_in = 16'heeee;   /* poison it */
         t_load_new_time = 0;
         # `PERIOD;
 
@@ -67,17 +82,11 @@ module test_al_clk_counter;
         t_one_minute = 0;
         # `PERIOD;
 
-        t_time_in = t_current_time_out;
-        # `PERIOD;
-
         @(posedge t_clk256)
         t_one_minute = 1;     /* +1 minute*/
         # `PERIOD;
 
         t_one_minute = 0;
-        # `PERIOD;
-
-        t_time_in = t_current_time_out;
         # `PERIOD;
 
         // run 10 minutes
@@ -91,8 +100,28 @@ module test_al_clk_counter;
             t_one_minute = 0;
             # `PERIOD;
 
-            t_time_in = t_current_time_out;
+        end
+
+        @(posedge t_clk256)
+        t_time_in = 16'h1630;  /* beer thirty */
+        t_load_new_time =1;
+        # `PERIOD;
+
+        t_time_in = 16'heeee;  /* poison it */
+        t_load_new_time =0;
+        # `PERIOD;
+
+        // run 30 minutes
+        for( i=0 ; i<30 ; i=i+1 ) 
+        begin
+            $display( "i=%d", i );
+            @(posedge t_clk256)
+            t_one_minute = 1;
             # `PERIOD;
+
+            t_one_minute = 0;
+            # `PERIOD;
+
         end
 
         # 1000;
