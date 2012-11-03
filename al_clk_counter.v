@@ -99,10 +99,12 @@ module al_clk_counter
 //         .out_ls_min(bcd_ls_min_out)
 //    );
 
-//    assign current_time_out = int_current_time;
+    reg [15:0] int_current_time;
 
-    assign current_time_out = { bcd_ms_hour_out, bcd_ls_hour_out, 
-                                  bcd_ms_min_out, bcd_ls_min_out };
+    assign current_time_out = int_current_time;
+
+//    assign current_time_out = { bcd_ms_hour_out, bcd_ls_hour_out, 
+//                                  bcd_ms_min_out, bcd_ls_min_out };
 
     always @(posedge(reset),posedge(clk256))
     begin
@@ -113,6 +115,8 @@ module al_clk_counter
                               bcd_ls_hour_out,
                               bcd_ms_min_out,
                               bcd_ls_min_out );
+            int_current_time = { bcd_ms_hour_out, bcd_ls_hour_out, 
+                                  bcd_ms_min_out, bcd_ls_min_out };
         end
         else if( load_new_time ) 
         begin
@@ -125,21 +129,27 @@ module al_clk_counter
                               bcd_ls_hour_out,
                               bcd_ms_min_out,
                               bcd_ls_min_out );
+            int_current_time = { bcd_ms_hour_out, bcd_ls_hour_out, 
+                                  bcd_ms_min_out, bcd_ls_min_out };
         end
         else if( one_minute ) 
         begin
-            bcd_clock_minute( 1, time_in[15:12],
-                              time_in[11:8],
-                              time_in[7:4],
-                              time_in[3:0],
+            bcd_clock_minute( 1, int_current_time[15:12],
+                              int_current_time[11:8],
+                              int_current_time[7:4],
+                              int_current_time[3:0],
 
                               bcd_ms_hour_out,
                               bcd_ls_hour_out,
                               bcd_ms_min_out,
                               bcd_ls_min_out );
+            int_current_time = { bcd_ms_hour_out, bcd_ls_hour_out, 
+                                  bcd_ms_min_out, bcd_ls_min_out };
         end
         else 
         begin
+            int_current_time = { bcd_ms_hour_out, bcd_ls_hour_out, 
+                                  bcd_ms_min_out, bcd_ls_min_out };
 //            bcd_clock_minute( 0, time_in[15:12],
 //                              time_in[11:8],
 //                              time_in[7:4],
