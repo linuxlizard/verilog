@@ -12,27 +12,27 @@
 module kbd_if
     ( input clk256,
       input reset,
-      input shift,
+      input kbd_shift,
 
       inout PS2C,
       inout PS2D,
 
-      output reg [31:0] key_buffer,
-      output reg [7:0] key,
+      output reg [15:0] key_buffer, // BCD value
+      output reg [7:0] key, // actual key codes
       output reg set_alarm, // (ignored) handled in AL_Controller
       output reg set_time   // (ignored) handled in AL_Controller
     );
 
-    wire [7:0] int_key_code;
-    reg [31:0] int_key_buffer;
+    wire [7:0] kbd_key_code;
+//    reg [15:0] kbd_key_buffer;
 
-    reg [7:0 ] last_key_pressed;
+//    reg [7:0 ] last_key_pressed;
 
     PS2_Keyboard ps2kbd
         (.ck(clk256),
          .PS2C(PS2C),
          .PS2D(PS2D),
-         .key_code_out(int_key_code) );
+         .ps2_key_code(kbd_key_code) );
 
     always @(posedge clk256,posedge reset)
     begin
@@ -43,18 +43,85 @@ module kbd_if
             set_time <= 0;
             set_alarm <= 0;
 
-            int_key_buffer <= 0;
+//            kbd_key_buffer <= 0;
         end
-        else if( shift == 1) 
+        else if( kbd_shift == 1) 
         begin
-            // shift a new value into the LSB of the key buffer
-            key_buffer <= {int_key_buffer[23:0],key};
-            int_key_buffer <= {int_key_buffer[23:0],key};
+            /* Copy/paste. Brute Force. */
+            case( key )
+                `KP_0 : 
+                begin
+//                    key_buffer <= {12'hfff,`KP_0_BCD}; 
+                    key_buffer <= {key_buffer[11:0],`KP_0_BCD}; 
+//                    kbd_key_buffer <= {kbd_key_buffer[11:0],`KP_0_BCD}; 
+                end
+
+                `KP_1 : 
+                begin
+//                    key_buffer <= {8'hef,`KP_1_BCD}; 
+                    key_buffer <= {key_buffer[11:0],`KP_1_BCD}; 
+//                    kbd_key_buffer <= {kbd_key_buffer[11:0],`KP_1_BCD}; 
+                end
+
+                `KP_2 : 
+                begin
+                    key_buffer <= {key_buffer[11:0],`KP_2_BCD}; 
+//                    kbd_key_buffer <= {kbd_key_buffer[11:0],`KP_2_BCD}; 
+                end
+
+                `KP_3 : 
+                begin
+                    key_buffer <= {key_buffer[11:0],`KP_3_BCD}; 
+//                    kbd_key_buffer <= {kbd_key_buffer[11:0],`KP_3_BCD}; 
+                end
+
+                `KP_4 : 
+                begin
+                    key_buffer <= {key_buffer[11:0],`KP_4_BCD}; 
+//                    kbd_key_buffer <= {kbd_key_buffer[11:0],`KP_4_BCD}; 
+                end
+
+                `KP_5 : 
+                begin
+                    key_buffer <= {key_buffer[11:0],`KP_5_BCD}; 
+//                    kbd_key_buffer <= {kbd_key_buffer[11:0],`KP_5_BCD}; 
+                end
+
+                `KP_6 : 
+                begin
+                    key_buffer <= {key_buffer[11:0],`KP_6_BCD}; 
+//                    kbd_key_buffer <= {kbd_key_buffer[11:0],`KP_6_BCD}; 
+                end
+
+                `KP_7 : 
+                begin
+                    key_buffer <= {key_buffer[11:0],`KP_7_BCD}; 
+//                    kbd_key_buffer <= {kbd_key_buffer[11:0],`KP_7_BCD}; 
+                end
+
+                `KP_8 : 
+                begin
+                    key_buffer <= {key_buffer[11:0],`KP_8_BCD}; 
+//                    kbd_key_buffer <= {kbd_key_buffer[11:0],`KP_8_BCD}; 
+                end
+
+                `KP_9 : 
+                begin
+                    key_buffer <= {key_buffer[11:0],`KP_9_BCD}; 
+//                    kbd_key_buffer <= {kbd_key_buffer[11:0],`KP_9_BCD}; 
+                end
+
+                default : 
+                begin
+                    key_buffer <= {key_buffer[11:0], 4'hf}; 
+//                    kbd_key_buffer <= {kbd_key_buffer[11:0],4'hf}; 
+                end
+            endcase
         end
         else 
         begin
-            // filter incoming codes; only pass the value
-            case( int_key_code )
+            // filter incoming codes; only pass the values we're expecting
+            case( kbd_key_code )
                 `KP_0 : key <= `KP_0;   
                 `KP_1 : key <= `KP_1;
                 `KP_2 : key <= `KP_2;
