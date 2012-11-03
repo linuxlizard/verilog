@@ -28,3 +28,5 @@
 //`define KP_MINUS_BCD 8'h0b
 //`define KP_KEY_RELEASED_BCD 8'hf0
 
+`define KP_INVALID 8'hff
+
