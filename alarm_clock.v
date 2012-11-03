@@ -20,8 +20,25 @@ module alarm_clock
     wire fast_mode;  /* sw0 */
     wire reset; /* sw7 */
 
+    wire snooze;
+    wire alarm_off;
+
     assign fast_mode = sw[0];
     assign reset = sw[7];
+    
+    /*
+     * Edge to Pulse Snooze and Alarm Off
+     */
+    edge_to_pulse snooze_edge_to_pulse
+        (.clk(MCLK),
+         .reset(reset),
+         .edge_in(btn[0]),
+         .pulse_out(snooze));
+    edge_to_pulse alarm_edge_to_pulse
+        (.clk(MCLK),
+         .reset(reset),
+         .edge_in(btn[0]),
+         .pulse_out(alarm_off));
 
     /*
      *  FREQ_DIV to 256Hz
@@ -65,7 +82,7 @@ module alarm_clock
 
     reg [15:0] ac_display_input;
 
-    assign Led = {ac_display_input[7:0]};
+//    assign Led = {ac_display_input[7:0]};
 
 `ifdef SIMULATION
     stub_digits_to_7seg run_digits_to_7seg 
@@ -74,7 +91,7 @@ module alarm_clock
 `endif
         ( .rst(reset),
           .mclk(MCLK),
-          .word_in( 16'h1234 ),
+          .word_in( ac_display_input ),
 //          .word_in( {bcd_ms_hour,bcd_ls_hour,bcd_ms_min,bcd_ls_min} ),
           .display_mask_in(4'b1111),
           .seg(ac_seg),
@@ -91,8 +108,8 @@ module alarm_clock
     wire ac_shift;
     wire [7:0] ac_key_code;
     wire [15:0] ac_key_buffer;
-    wire wire_set_alarm;
-    wire wire_set_time;
+//    wire wire_set_alarm;
+//    wire wire_set_time;
 
     kbd_if run_kbd_if 
         ( .clk256(clk256),
@@ -104,9 +121,9 @@ module alarm_clock
 
           /* outputs */
           .key_buffer(ac_key_buffer),
-          .key(ac_key_code),
-          .set_alarm(wire_set_alarm),
-          .set_time(wire_set_time) 
+          .key(ac_key_code)
+//          .set_alarm(wire_set_alarm),
+//          .set_time(wire_set_time) 
         );
 
     /*
@@ -159,9 +176,15 @@ module alarm_clock
         (.clk256(clk256),
          .reset(reset),
          .new_alarm_time(ac_key_buffer),
+         .load_alarm(ac_load_alarm),
 
+         /* output */
          .alarm_time(curr_alarm_time) );
 
+
+    reg [7:0] int_led;
+
+    assign Led = int_led;
 
     always @(posedge(reset),posedge(MCLK))
     begin
@@ -172,11 +195,20 @@ module alarm_clock
         else
         begin
             if( ac_key_buffer != 0 ) 
+            begin
+                int_led <= 8'b00000001;
                 ac_display_input <= ac_key_buffer;
+            end
             else if( ac_show_alarm )
+            begin
+                int_led <= 8'b00000010;
                 ac_display_input <= curr_alarm_time;
+            end
             else 
+            begin
+                int_led <= 8'b00000100;
                 ac_display_input <= ac_current_time;
+            end
         end
     end
 
