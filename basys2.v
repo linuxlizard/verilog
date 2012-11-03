@@ -34,7 +34,7 @@ module basys2;
     reg PS2C;
     reg PS2D;
 
-    AL_Controller run_alarm_clock
+    alarm_clock run_alarm_clock
         ( .MCLK(MCLK),
           .sw(sw),
           .btn(btn),
