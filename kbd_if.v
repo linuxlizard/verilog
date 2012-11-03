@@ -18,9 +18,9 @@ module kbd_if
       inout PS2D,
 
       output reg [15:0] key_buffer, // BCD value
-      output reg [7:0] key, // actual key codes
-      output reg set_alarm, // (ignored) handled in AL_Controller
-      output reg set_time   // (ignored) handled in AL_Controller
+      output reg [7:0] key // actual key codes
+//      output reg set_alarm, // (ignored) handled in AL_Controller
+//      output reg set_time   // (ignored) handled in AL_Controller
     );
 
     wire [7:0] kbd_key_code;
@@ -40,8 +40,8 @@ module kbd_if
         begin
             key <= 0;
             key_buffer <= 0;
-            set_time <= 0;
-            set_alarm <= 0;
+//            set_time <= 0;
+//            set_alarm <= 0;
 
 //            kbd_key_buffer <= 0;
         end
