@@ -19,8 +19,8 @@ module kbd_if
 
       output reg [31:0] key_buffer,
       output reg [7:0] key,
-      output reg set_alarm, // '*' was pressed
-      output reg set_time   // '-' was pressed
+      output reg set_alarm, // (ignored) handled in AL_Controller
+      output reg set_time   // (ignored) handled in AL_Controller
     );
 
     wire [7:0] int_key_code;
