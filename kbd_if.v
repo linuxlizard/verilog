@@ -26,6 +26,8 @@ module kbd_if
     wire [7:0] int_key_code;
     reg [31:0] int_key_buffer;
 
+    reg [7:0 ] last_key_pressed;
+
     PS2_Keyboard ps2kbd
         (.ck(clk256),
          .PS2C(PS2C),
@@ -46,26 +48,29 @@ module kbd_if
         else if( shift == 1) 
         begin
             // shift a new value into the LSB of the key buffer
-            key_buffer <= {int_key_buffer[23:0],int_key_code};
-            int_key_buffer <= {int_key_buffer[23:0],int_key_code};
+            key_buffer <= {int_key_buffer[23:0],key};
+            int_key_buffer <= {int_key_buffer[23:0],key};
         end
-
-        // filter incoming codes; only pass the value
-        case( int_key_code )
-            `KP_0 : key <= `KP_0;
-            `KP_1 : key <= `KP_1;
-            `KP_2 : key <= `KP_2;
-            `KP_3 : key <= `KP_3;
-            `KP_4 : key <= `KP_4;
-            `KP_5 : key <= `KP_5;
-            `KP_6 : key <= `KP_6;
-            `KP_7 : key <= `KP_7;
-            `KP_8 : key <= `KP_8;
-            `KP_9 : key <= `KP_9;
-            `KP_STAR : key <= `KP_STAR;
-            `KP_MINUS : key <= `KP_MINUS;
-            default : key <= 0;
-        endcase
+        else 
+        begin
+            // filter incoming codes; only pass the value
+            case( int_key_code )
+                `KP_0 : key <= `KP_0;   
+                `KP_1 : key <= `KP_1;
+                `KP_2 : key <= `KP_2;
+                `KP_3 : key <= `KP_3;
+                `KP_4 : key <= `KP_4;
+                `KP_5 : key <= `KP_5;
+                `KP_6 : key <= `KP_6;
+                `KP_7 : key <= `KP_7;
+                `KP_8 : key <= `KP_8;
+                `KP_9 : key <= `KP_9;
+                `KP_STAR : key <= `KP_STAR;
+                `KP_MINUS : key <= `KP_MINUS;
+                `KP_KEY_RELEASED : key <= `KP_KEY_RELEASED;
+                default : key <= `KP_INVALID;
+            endcase
+        end
     end
 
 endmodule
