@@ -13,20 +13,16 @@
 
 `define KP_KEY_RELEASED 8'hf0
 
-`define KP_0_BCD 8'h00
-`define KP_1_BCD 8'h01
-`define KP_2_BCD 8'h02
-`define KP_3_BCD 8'h03
-`define KP_4_BCD 8'h04
-`define KP_5_BCD 8'h05
-`define KP_6_BCD 8'h06
-`define KP_7_BCD 8'h07
-`define KP_8_BCD 8'h08
-`define KP_9_BCD   8'h09
-
-//`define KP_STAR_BCD 8'h0a
-//`define KP_MINUS_BCD 8'h0b
-//`define KP_KEY_RELEASED_BCD 8'hf0
+`define KP_0_BCD 4'h0
+`define KP_1_BCD 4'h1
+`define KP_2_BCD 4'h2
+`define KP_3_BCD 4'h3
+`define KP_4_BCD 4'h4
+`define KP_5_BCD 4'h5
+`define KP_6_BCD 4'h6
+`define KP_7_BCD 4'h7
+`define KP_8_BCD 4'h8
+`define KP_9_BCD   4'h9
 
 `define KP_INVALID 8'hff
 
