@@ -8,174 +8,158 @@
 
 `timescale 1 ns / 10 ps
 
+`include "keycodes.vh"
+
 module AL_Controller
-    ( input  MCLK,
-      input  [7:0] sw,
-      input  [3:0] btn,
+    ( input  clk256,
+      input  reset,
+      input  one_second,
+      input [7:0] key,
+      input set_alarm,
+      input set_time,
 
-      input PS2C,
-      input PS2D,
-
-      output  [7:0] Led,
-      output  [6:0] seg,
-      output  dp,
-      output  [3:0] an
+      output  reg load_alarm,
+      output  reg show_alarm,
+      output  reg shift,
+      output  reg load_new_time
     );
 
-//module AL_Controller ( MCLK, Led, sw, seg, dp, an, btn );
+`define STATE_SHOW_TIME     0
+`define STATE_KEY_STORE     1
+`define STATE_KEY_HOLD      2
+`define STATE_KEY_RELEASE_FINISH    3
+`define STATE_KEY_ENTRY     4
+`define STATE_SET_ALARM_TIME    5
+`define STATE_SET_CURRENT_TIME  6
+`define STATE_SHOW_ALARM    7
+`define STATE_KEY_SHOW_ALARM_RELEASE 8
 
-//    input MCLK; 
-//    input [7:0] sw;
-//    input [3:0] btn;
-//
-//    output wire [7:0] Led;
-//    output wire [6:0] seg;
-//    output wire dp;
-//    output wire [3:0] an;
+    reg [3:0] curr_state=`STATE_SHOW_TIME;
+    reg [3:0] next_state=`STATE_SHOW_TIME;
 
-    wire freq_div_out_time_gen_in;
+    reg [7:0] curr_key;
 
-    // internal signals
-    reg int_fast_mode;
-    wire int_one_second;
-    wire int_one_minute;
-    reg int_reset;
-
-    wire [6:0] int_seg;
-    wire [3:0] int_an;
-    wire int_dp;
-
-//    reg [7:0] second_counter = 0;
-//    reg [7:0] minute_counter = 0;
-
-    reg [3:0] bcd_ms_hour = 0;
-    reg [3:0] bcd_ls_hour = 0;
-    reg [3:0] bcd_ms_min = 0;
-    reg [3:0] bcd_ls_min = 0;
-
-    wire [3:0] bcd_ms_hour_out;
-    wire [3:0] bcd_ls_hour_out;
-    wire [3:0] bcd_ms_min_out;
-    wire [3:0] bcd_ls_min_out;
-
-
-`ifdef SIMULATION
-    localparam clock_div = 2;  
-`else
-//    localparam clock_div = 195312;  // 50Mhz -> 256Hz
-    localparam clock_div = 97656;  // 25Mhz -> 256Hz
-`endif
-
-    FREQ_DIV #(clock_div) run_freq_div
-        (.clk(MCLK),
-         .reset(int_reset),
-         .clk256(freq_div_out_time_gen_in) );
-
-    TIME_GEN run_time_gen
-        (.clk256(freq_div_out_time_gen_in),
-         .reset(int_reset),
-         .fast_mode( int_fast_mode ),
-         .one_second(int_one_second),
-         .one_minute(int_one_minute) );
-
-    reg [7:0] key_code;
-//    assign Led = key_code;
-//    assign seg = key_code;
-    
-`ifdef SIMULATION
-`else
-    PS2_Keyboard ps2kbd
-        (.ck(MCLK),
-         .PS2C(PS2C),
-         .PS2D(PS2D),
-         .key_code_out(Led) );
-`endif
-
-//    always @(posedge int_reset, posedge MCLK)
-//    begin
-//        if( int_reset ) 
-//            Led <= 8'b00000000;
-//        else
-//            Led <= key_code;
-//    end
-
-    /* increments current time by one minute */
-    bcd_clock run_bcd_clock
-        (.add_one(int_one_minute),
-         .ms_hour(bcd_ms_hour),
-         .ls_hour(bcd_ls_hour),
-         .ms_min(bcd_ms_min),
-         .ls_min(bcd_ls_min),
-         
-         .out_ms_hour(bcd_ms_hour_out),
-         .out_ls_hour(bcd_ls_hour_out),
-         .out_ms_min(bcd_ms_min_out),
-         .out_ls_min(bcd_ls_min_out)
-    );
-
-`ifdef SIMULATION
-    stub_digits_to_7seg run_digits_to_7seg 
-`else
-    hex_to_7seg run_digits_to_7seg 
-`endif
-        ( .rst(int_reset),
-          .mclk(MCLK),
-          .word_in( {bcd_ms_hour,bcd_ls_hour,bcd_ms_min,bcd_ls_min} ),
-          .display_mask_in(4'b1111),
-          .seg(int_seg),
-          .an(int_an),
-          .dp(int_dp) );
-
-    assign seg = int_seg;
-    assign an = int_an;
-    assign dp = int_dp;
-
-//    assign Led ={ int_one_minute,int_one_minute,int_one_minute,int_one_minute,
-//                  int_one_second,int_one_second,int_one_second,int_one_second}; 
-
-    always @(posedge MCLK)
+    always @(posedge(clk256))
     begin
-        int_reset <= btn[0];
-        int_fast_mode <= sw[1];
+        curr_state <= next_state;
     end
 
-    // Want the LED to rotate left to right showing the passage of seconds
-    reg [7:0] led_value = 8'h01;
-//    assign Led = led_value;
+    reg [7:0] seconds_timeout;
 
-//    assign Led ={ int_one_minute,int_one_minute,int_one_minute,int_one_minute,
-//                  int_one_second,int_one_second,int_one_second,int_one_second}; 
-
-    always @( posedge int_reset, posedge int_one_second)
+    always @(curr_state,key,one_second) 
     begin
-        if( int_reset )
+        if( one_second && seconds_timeout > 0 )
         begin
-            led_value <= 8'h01;
+            seconds_timeout <= seconds_timeout - 1;
         end
-        else 
-        begin
-            // rotate bit left
-            led_value <= { led_value[6:0], led_value[7] };
-        end
+
+        case( curr_state )
+            `STATE_SHOW_TIME :
+            begin
+                load_alarm <= 0;
+                show_alarm <= 0;
+                shift <= 0;
+                load_new_time <= 0;
+                if( key==`KP_STAR ) 
+                    next_state <= `STATE_SHOW_ALARM;
+                else if( key==`KP_0 || 
+                         key==`KP_1 || 
+                         key==`KP_2 || 
+                         key==`KP_3 || 
+                         key==`KP_4 || 
+                         key==`KP_5 || 
+                         key==`KP_6 || 
+                         key==`KP_7 || 
+                         key==`KP_8 || 
+                         key==`KP_9  ) 
+                begin
+                    next_state <= `STATE_KEY_STORE;
+                end
+            end
+
+            `STATE_KEY_STORE :
+            begin
+                shift <= 1;
+                next_state <= `STATE_KEY_HOLD;
+            end
+
+            `STATE_KEY_HOLD :
+            begin
+                shift <= 0;
+                if( key==`KP_KEY_RELEASED )
+                    next_state <= `STATE_KEY_RELEASE_FINISH;
+            end
+
+            `STATE_KEY_RELEASE_FINISH :
+            begin
+                // after the key release keycode, we will get another keycode
+                // indicating which key was released
+                if( key==`KP_INVALID ) 
+                begin
+                    seconds_timeout <= 10;
+                    next_state <= `STATE_KEY_ENTRY;
+                end
+            end
+
+            `STATE_KEY_ENTRY :
+            begin
+                if( seconds_timeout==0 ) 
+                    // 10 seconds have elapsed; abandon operation and go back
+                    // to display
+                    next_state <= `STATE_SHOW_TIME;
+                else if( key==`KP_STAR ) 
+                    next_state <= `STATE_SET_ALARM_TIME;
+                else if( key==`KP_MINUS ) 
+                    next_state <= `STATE_SET_CURRENT_TIME;
+                else if( key==`KP_0 || 
+                         key==`KP_1 || 
+                         key==`KP_2 || 
+                         key==`KP_3 || 
+                         key==`KP_4 || 
+                         key==`KP_5 || 
+                         key==`KP_6 || 
+                         key==`KP_7 || 
+                         key==`KP_8 || 
+                         key==`KP_9  ) 
+                begin
+                    next_state <= `STATE_KEY_STORE;
+                end
+            end
+
+            `STATE_SET_ALARM_TIME :
+            begin
+                load_alarm <= 1;
+                next_state <= `STATE_SHOW_TIME;
+            end
+
+            `STATE_SET_CURRENT_TIME :
+            begin
+                load_new_time <= 1;
+                next_state <= `STATE_SHOW_TIME;
+            end
+
+            `STATE_SHOW_ALARM :
+            begin
+                // stay here showing the alarm as long as the key is pressed
+                show_alarm <= 1;
+                if( key==`KP_KEY_RELEASED )
+                    next_state <= `STATE_KEY_SHOW_ALARM_RELEASE;
+            end
+
+            `STATE_KEY_SHOW_ALARM_RELEASE :
+            begin
+                // after the key release keycode, we will get another keycode
+                // indicating which key was released. Eat that keycod here.
+                if( key==0 ) 
+                    next_state <= `STATE_SHOW_TIME;
+            end
+
+            default :
+                next_state <= `STATE_SHOW_TIME;
+        endcase
     end
 
-    // reassign output of BCD hour/minute clock +1 back to current value
-    always @(posedge int_reset, posedge MCLK )
-    begin
-        if( int_reset ) 
-        begin
-            bcd_ms_hour <= 0;
-            bcd_ls_hour <= 0;
-            bcd_ms_min <= 0;
-            bcd_ls_min <= 0;
-        end
-        else 
-        begin
-            bcd_ms_hour <= bcd_ms_hour_out;
-            bcd_ls_hour <= bcd_ls_hour_out;
-            bcd_ms_min <= bcd_ms_min_out;
-            bcd_ls_min <= bcd_ls_min_out;
-        end
-    end
+
+
 endmodule
 
