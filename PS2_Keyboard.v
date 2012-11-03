@@ -21,16 +21,27 @@ module PS2_Keyboard
         key_counter <= key_counter + 1;         
 
         // run a simple set of keypresses in a loop
-        case( key_counter%16 )
+        case( key_counter%20 )
+                // press
                 0,1 : key_code_out <= `KP_1; 
-                2,3 : key_code_out <= 0;
-                4,5 : key_code_out <= `KP_2;
-                6,7 : key_code_out <= 0;
-                8,9 : key_code_out <= `KP_3;
-               10,11: key_code_out <= 0;
-               12,13: key_code_out <= `KP_4;
-               14,15: key_code_out <= 0;
-            default : key_code_out <= 0;
+                // release
+                2 : key_code_out <= `KP_KEY_RELEASED;
+                3 : key_code_out <= `KP_1; 
+
+                4 : key_code_out <= 0;
+
+                // press
+                5,6 : key_code_out <= `KP_2; 
+                // release
+                7 : key_code_out <= `KP_KEY_RELEASED;
+                8 : key_code_out <= `KP_2; 
+//               10,11,12,13,14: key_code_out <= `KP_2;
+//               15,16,17,18,19: key_code_out <= 0;
+//                9,10: key_code_out <= `KP_3;
+//               11,12: key_code_out <= 0;
+//               13,14: key_code_out <= `KP_4;
+//               15,16: key_code_out <= 0;
+            default : key_code_out <= 8'h00;
         endcase
     end
 
