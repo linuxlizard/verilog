@@ -12,11 +12,11 @@
 
 module AL_Controller
     ( input  clk256,
-      input  reset,
+//      input  reset,
       input  one_second,
       input [7:0] key,
-      input set_alarm,
-      input set_time,
+//      input set_alarm,
+//      input set_time,
 
       output  reg load_alarm,
       output  reg show_alarm,
@@ -37,7 +37,7 @@ module AL_Controller
     reg [3:0] curr_state=`STATE_SHOW_TIME;
     reg [3:0] next_state=`STATE_SHOW_TIME;
 
-    reg [7:0] curr_key;
+//    reg [7:0] curr_key;
 
     always @(posedge(clk256))
     begin
@@ -46,7 +46,7 @@ module AL_Controller
 
     reg [7:0] seconds_timeout;
 
-    always @(curr_state,key,one_second) 
+    always @(curr_state,key,one_second,seconds_timeout) 
     begin
         if( one_second && seconds_timeout > 0 )
         begin
@@ -155,7 +155,13 @@ module AL_Controller
             end
 
             default :
+            begin
+                load_alarm <= 0;
+                show_alarm <= 0;
+                alc_shift <= 0;
+                load_new_time <= 0;
                 next_state <= `STATE_SHOW_TIME;
+            end
         endcase
     end
 
