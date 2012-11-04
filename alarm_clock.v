@@ -23,8 +23,6 @@ module alarm_clock
     assign fast_mode = sw[0];
     assign reset = sw[7];
 
-    assign Led = 0;
-
     /*
      *  FREQ_DIV to 256Hz
      */
@@ -60,12 +58,14 @@ module alarm_clock
      *  Seven Segment Display 
      */
 
-    reg [3:0] bcd_ms_hour;
-    reg [3:0] bcd_ls_hour;
-    reg [3:0] bcd_ms_min;
-    reg [3:0] bcd_ls_min;
+//    reg [3:0] bcd_ms_hour;
+//    reg [3:0] bcd_ls_hour;
+//    reg [3:0] bcd_ms_min;
+//    reg [3:0] bcd_ls_min;
 
     reg [15:0] ac_display_input;
+
+    assign Led = {ac_display_input[7:0]};
 
 `ifdef SIMULATION
     stub_digits_to_7seg run_digits_to_7seg 
@@ -74,7 +74,7 @@ module alarm_clock
 `endif
         ( .rst(reset),
           .mclk(MCLK),
-          .word_in( ac_display_input ),
+          .word_in( 16'h1234 ),
 //          .word_in( {bcd_ms_hour,bcd_ls_hour,bcd_ms_min,bcd_ls_min} ),
           .display_mask_in(4'b1111),
           .seg(ac_seg),
@@ -119,11 +119,11 @@ module alarm_clock
 
     AL_Controller run_al_controller
         ( .clk256(clk256),
-          .reset(reset),
+//          .reset(reset),
           .one_second(ac_one_second),
           .key(ac_key_code),
-          .set_alarm(0), // on the spec but not used; a key (*) used for set alarm
-          .set_time(0),  // on the spec but not used; a key (-) used for set time
+//          .set_alarm(1'b0), // on the spec but not used; a key (*) used for set alarm
+//          .set_time(1'b0),  // on the spec but not used; a key (-) used for set time
           
           /* outputs */
           .load_alarm(ac_load_alarm),
@@ -149,6 +149,20 @@ module alarm_clock
           .current_time_out(ac_current_time)
         );
 
+
+    /*
+     * Alarm Register
+     */
+    wire [15:0] curr_alarm_time;
+
+    AL_Reg run_al_reg
+        (.clk256(clk256),
+         .reset(reset),
+         .new_alarm_time(ac_key_buffer),
+
+         .alarm_time(curr_alarm_time) );
+
+
     always @(posedge(reset),posedge(MCLK))
     begin
         if( reset ) 
@@ -159,6 +173,8 @@ module alarm_clock
         begin
             if( ac_key_buffer != 0 ) 
                 ac_display_input <= ac_key_buffer;
+            else if( ac_show_alarm )
+                ac_display_input <= curr_alarm_time;
             else 
                 ac_display_input <= ac_current_time;
         end
