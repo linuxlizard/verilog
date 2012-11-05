@@ -13,15 +13,8 @@ module alarm_clock
       output [3:0] an,
       output dp );
 
-    wire [6:0] ac_seg;
-    wire [3:0] ac_an;
-    wire ac_dp;
-
     wire fast_mode;  /* sw0 */
     wire reset; /* sw7 */
-
-    wire snooze;
-    wire alarm_off;
 
     assign fast_mode = sw[0];
     assign reset = sw[7];
@@ -29,6 +22,10 @@ module alarm_clock
     /*
      * Edge to Pulse Snooze and Alarm Off
      */
+
+    wire snooze;
+    wire alarm_off;
+
     edge_to_pulse snooze_edge_to_pulse
         (.clk(MCLK),
          .reset(reset),
@@ -37,7 +34,7 @@ module alarm_clock
     edge_to_pulse alarm_edge_to_pulse
         (.clk(MCLK),
          .reset(reset),
-         .edge_in(btn[0]),
+         .edge_in(btn[1]),
          .pulse_out(alarm_off));
 
     /*
@@ -75,14 +72,15 @@ module alarm_clock
      *  Seven Segment Display 
      */
 
-//    reg [3:0] bcd_ms_hour;
-//    reg [3:0] bcd_ls_hour;
-//    reg [3:0] bcd_ms_min;
-//    reg [3:0] bcd_ls_min;
+    wire [15:0] ac_display_input;
 
-    reg [15:0] ac_display_input;
+    wire [6:0] ac_seg;
+    wire [3:0] ac_an;
+    wire ac_dp;
 
-//    assign Led = {ac_display_input[7:0]};
+    assign seg = ac_seg;
+    assign an = ac_an;
+    assign dp = ac_dp;
 
 `ifdef SIMULATION
     stub_digits_to_7seg run_digits_to_7seg 
@@ -92,15 +90,10 @@ module alarm_clock
         ( .rst(reset),
           .mclk(MCLK),
           .word_in( ac_display_input ),
-//          .word_in( {bcd_ms_hour,bcd_ls_hour,bcd_ms_min,bcd_ls_min} ),
           .display_mask_in(4'b1111),
           .seg(ac_seg),
           .an(ac_an),
           .dp(ac_dp) );
-
-    assign seg = ac_seg;
-    assign an = ac_an;
-    assign dp = ac_dp;
 
     /*
      *   KBD_IF 
@@ -181,35 +174,62 @@ module alarm_clock
          /* output */
          .alarm_time(curr_alarm_time) );
 
+    /*
+     * Display Driver
+     *
+     */
+    DISP_DRVR run_disp_drvr
+        (.one_minute(ac_one_minute),
+         .snooze(snooze),
+         .stop_alarm(alarm_off),
+         .alarm_time(curr_alarm_time),
+         .current_time(ac_current_time),
+         .show_alarm(ac_show_alarm),
+
+         /* outputs */
+         .display( ac_display_input ),
+         .sound_alarm(Led[0]) );
 
     reg [7:0] int_led;
 
     assign Led = int_led;
 
-    always @(posedge(reset),posedge(MCLK))
+//    always @(posedge(reset),posedge(MCLK))
+//    begin
+//        if( reset ) 
+//        begin
+//            ac_display_input <= ac_current_time;
+//        end
+//        else
+//        begin
+//            if( ac_key_buffer != 0 ) 
+//            begin
+//                int_led <= 8'b00000001;
+//                ac_display_input <= ac_key_buffer;
+//            end
+//            else if( ac_show_alarm )
+//            begin
+//                int_led <= 8'b00000010;
+//                ac_display_input <= curr_alarm_time;
+//            end
+//            else 
+//            begin
+//                int_led <= 8'b00000100;
+//                ac_display_input <= ac_current_time;
+//            end
+//        end
+//    end
+
+    initial
     begin
-        if( reset ) 
-        begin
-            ac_display_input <= ac_current_time;
-        end
-        else
-        begin
-            if( ac_key_buffer != 0 ) 
-            begin
-                int_led <= 8'b00000001;
-                ac_display_input <= ac_key_buffer;
-            end
-            else if( ac_show_alarm )
-            begin
-                int_led <= 8'b00000010;
-                ac_display_input <= curr_alarm_time;
-            end
-            else 
-            begin
-                int_led <= 8'b00000100;
-                ac_display_input <= ac_current_time;
-            end
-        end
+        $display("Hello, world");
+        $dumpfile("alarm_clock.vcd");
+        $dumpvars(0,alarm_clock);
+
+        $monitor( "%d currtime=%x key=%x keybuffer=%x", $time, 
+                ac_current_time, ac_key_code, ac_key_buffer );
+
+        # 10000000;
     end
 
 endmodule

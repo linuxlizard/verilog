@@ -11,8 +11,8 @@ module stub_digits_to_7seg( input wire mclk,
 
     always @(posedge mclk)
     begin
-        seg <= word_in;
-        an <= 4'b1111;
+        seg <= word_in[6:0];
+        an <= word_in[10:7];
         dp <= 1'b1;
     end
 

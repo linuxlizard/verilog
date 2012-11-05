@@ -31,8 +31,8 @@ module basys2;
 
     reg t_reset;
 
-    reg PS2C;
-    reg PS2D;
+    wire PS2C;
+    wire PS2D;
 
     alarm_clock run_alarm_clock
         ( .MCLK(MCLK),
@@ -54,17 +54,22 @@ module basys2;
     initial
     begin
         $display("Hello, world");
-        $dumpfile("basys2.vcd");
-        $dumpvars(0,basys2);
+//        $dumpfile("basys2.vcd");
+//        $dumpvars(0,basys2);
 
-        $monitor( "%d Led=%x seg=%d",$time, Led, seg );
+//        $monitor( "%d Led=%x disp=%b%b",$time, Led, an, seg );
 
-        sw = 8'd2; // turn on fast mode
+//        sw = 8'd2; // turn on fast mode
 //        sw = 8'd0;
+        sw = 8'b10000000; // reset
         btn = 4'd0;
         # `PERIOD;
 
-//        # 100000;
+        @(negedge MCLK);
+        sw = 8'd2; // turn off reset, turn on fast mode 
+        # `PERIOD;
+
+        # 700000;
 //        $finish;
     end
 

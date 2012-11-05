@@ -4,19 +4,19 @@ module DISP_DRVR
     ( input one_minute,
       input snooze,
       input stop_alarm,
-      input [31:0] alarm_time,
-      input [31:0] current_time,
+      input [15:0] alarm_time,
+      input [15:0] current_time,
       input show_alarm,
 
-      output [31:0] display,
+      output [15:0] display,
       output sound_alarm
     );
 
-    reg [31:0] snooze_alarm_time=0;
+    reg [15:0] snooze_alarm_time=0;
     reg snooze_active=0;
 
     reg int_sound_alarm;
-    reg [31:0] int_display;
+    reg [15:0] int_display;
 
     assign sound_alarm = int_sound_alarm;
     assign display = int_display;
@@ -49,7 +49,7 @@ module DISP_DRVR
         begin
             // push the next_alarm time forward 
             snooze_active <= 1;
-            // add five minutes to snooze time
+            // TODO add five minutes to snooze time
         end
 
         // turn off the alarm

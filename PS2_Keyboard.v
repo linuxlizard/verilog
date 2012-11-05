@@ -21,16 +21,16 @@ module PS2_Keyboard
         key_counter <= key_counter + 1;         
 
         // run a simple set of keypresses in a loop
-        case( key_counter%20 )
-                // press
-                0,1,2 : ps2_key_code <= `KP_1; 
-                // release
-                3,4,5 : ps2_key_code <= `KP_KEY_RELEASED;
-                6,7,8 : ps2_key_code <= `KP_1; 
-
-                9,10,11 : ps2_key_code <= 0;
-
-                // press
+//        case( key_counter%20 )
+//                // press
+//                0,1,2 : ps2_key_code <= `KP_1; 
+//                // release
+//                3,4,5 : ps2_key_code <= `KP_KEY_RELEASED;
+//                6,7,8 : ps2_key_code <= `KP_1; 
+//
+//                9,10,11 : ps2_key_code <= 0;
+//
+//                // press
 //                5,6 : ps2_key_code <= `KP_2; 
 //                // release
 //                7 : ps2_key_code <= `KP_KEY_RELEASED;
@@ -41,9 +41,64 @@ module PS2_Keyboard
 //               11,12: ps2_key_code <= 0;
 //               13,14: ps2_key_code <= `KP_4;
 //               15,16: ps2_key_code <= 0;
-            default : ps2_key_code <= 8'h00;
-        endcase
+//            default : ps2_key_code <= 8'h00;
+//        endcase
     end
+
+`define KEY_DELAY 500
+    initial
+    begin
+        # `KEY_DELAY
+        ps2_key_code <= `KP_INVALID; 
+
+        # `KEY_DELAY
+        ps2_key_code <= `KP_1; 
+        # `KEY_DELAY
+        ps2_key_code <= `KP_KEY_RELEASED;
+        # `KEY_DELAY
+        ps2_key_code <= `KP_1;
+
+        # `KEY_DELAY
+        ps2_key_code <= `KP_INVALID; 
+
+        # `KEY_DELAY
+        ps2_key_code <= `KP_2; 
+        # `KEY_DELAY
+        ps2_key_code <= `KP_KEY_RELEASED;
+        # `KEY_DELAY
+        ps2_key_code <= `KP_2;
+
+        # `KEY_DELAY
+        ps2_key_code <= `KP_INVALID; 
+
+        # `KEY_DELAY
+        ps2_key_code <= `KP_3; 
+        # `KEY_DELAY
+        ps2_key_code <= `KP_KEY_RELEASED;
+        # `KEY_DELAY
+        ps2_key_code <= `KP_3;
+
+        # `KEY_DELAY
+        ps2_key_code <= `KP_INVALID; 
+
+        # `KEY_DELAY
+        ps2_key_code <= `KP_4; 
+        # `KEY_DELAY
+        ps2_key_code <= `KP_KEY_RELEASED;
+        # `KEY_DELAY
+        ps2_key_code <= `KP_4;
+
+        # `KEY_DELAY
+        ps2_key_code <= `KP_INVALID; 
+
+        # `KEY_DELAY
+
+        $display( "end of PS2 input" );
+//        $finish;
+//        $;
+        # 10000000;
+    end
+
 
 endmodule
 

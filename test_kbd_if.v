@@ -9,6 +9,10 @@
 `define PERIOD 10
 `define HALF_PERIOD 5
 
+`include "keycodes.vh"
+
+`include "bcd_clockf.vh"
+
 module test_kbd_if;
 
     reg MCLK = 0;
@@ -28,7 +32,7 @@ module test_kbd_if;
     wire wire_set_time;
 
     kbd_if run_kbd_if 
-        ( .clk256(MCLK),
+        ( .clk(MCLK),
           .reset(int_reset),
           .shift(int_shift),
 
@@ -50,12 +54,12 @@ module test_kbd_if;
 
     // Mealy state machine
     // simple way to shift in a new keycode whenever a value key is pushed
-`define SHIFT_STATE_START       0
-`define SHIFT_STATE_READING_KEY 1
-`define SHIFT_STATE_WAITING     2
+`define STATE_START       0
+`define STATE_STORE_KEY 1
+`define STATE_WAITING     2
 
-    reg [3:0] shift_state=`SHIFT_STATE_START;
-    reg [3:0] shift_next_state=`SHIFT_STATE_START;
+    reg [3:0] shift_state=`STATE_START;
+    reg [3:0] shift_next_state=`STATE_START;
 
     always @(posedge(MCLK))
     begin
@@ -65,27 +69,22 @@ module test_kbd_if;
     always @(shift_state,int_key) 
     begin
         case( shift_state )
-            `SHIFT_STATE_START :
+            `STATE_START :
                 begin
                     int_shift <= 0;
-                    if( int_key != 8'h0 )
-                        shift_next_state <= `SHIFT_STATE_READING_KEY;
+                    // has a key been pressed? */
+                    if( int_key != 8'hff )
+                        shift_next_state <= `STATE_STORE_KEY;
                 end
 
-            `SHIFT_STATE_READING_KEY :
+            `STATE_STORE_KEY :
                 begin
                     int_shift <= 1;
-                    shift_next_state <= `SHIFT_STATE_WAITING;
-                end
-
-            `SHIFT_STATE_WAITING :
-                begin
-                    int_shift <= 0;
-                    shift_next_state <= `SHIFT_STATE_START;
+                    shift_next_state <= `STATE_START;
                 end
 
             default :
-                shift_next_state = `SHIFT_STATE_START;
+                shift_next_state = `STATE_START;
         endcase
     end
 
@@ -105,7 +104,7 @@ module test_kbd_if;
         int_reset = ~int_reset;
         # `PERIOD;
 
-        # 200;
+        # 2000;
 
         $finish;
     end
