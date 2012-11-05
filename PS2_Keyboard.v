@@ -93,6 +93,17 @@ module PS2_Keyboard
 
         # `KEY_DELAY
 
+        $display( "push the - key to load current time" );
+        # `KEY_DELAY
+        ps2_key_code <= `KP_MINUS; 
+        # `KEY_DELAY
+        ps2_key_code <= `KP_KEY_RELEASED;
+        # `KEY_DELAY
+        ps2_key_code <= `KP_MINUS;
+
+        # `KEY_DELAY
+        ps2_key_code <= `KP_INVALID; 
+
         $display( "end of PS2 input" );
 //        $finish;
 //        $;
