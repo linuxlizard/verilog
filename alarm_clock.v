@@ -43,6 +43,7 @@ module alarm_clock
 
     wire clk256;
 
+`define SIMULATION 1
 `ifdef SIMULATION
     localparam clock_div = 1;  /* counts 0,1,0,1,0,1,0,1,... */
 `else
@@ -82,7 +83,7 @@ module alarm_clock
     assign an = ac_an;
     assign dp = ac_dp;
 
-`ifdef SIMULATION
+`ifdef foo_SIMULATION
     stub_digits_to_7seg run_digits_to_7seg 
 `else
     hex_to_7seg run_digits_to_7seg 
@@ -145,14 +146,14 @@ module alarm_clock
     /*
      *  AL_Clk_Counter  
      */
-    wire [15:0] ac_time_in;
+//    wire [15:0] ac_time_in;
     wire [15:0] ac_current_time;
 
     al_clk_counter run_al_clk_counter
         ( .clk256(clk256),
           .reset(reset),
           .one_minute(ac_one_minute),
-          .time_in(ac_time_in),
+          .time_in(ac_key_buffer),
           .load_new_time(ac_load_new_time),
 
           /* outputs */
