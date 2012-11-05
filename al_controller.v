@@ -46,12 +46,12 @@ module AL_Controller
 
     reg [7:0] seconds_timeout;
 
-    always @(curr_state,key,one_second,seconds_timeout) 
+    always @(curr_state,key,one_second) 
     begin
-        if( one_second && seconds_timeout > 0 )
-        begin
-            seconds_timeout <= seconds_timeout - 1;
-        end
+//        if( one_second && seconds_timeout > 0 )
+//        begin
+//            seconds_timeout <= seconds_timeout - 1;
+//        end
 
         case( curr_state )
             `STATE_SHOW_TIME :
