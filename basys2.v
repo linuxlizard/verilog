@@ -29,7 +29,7 @@ module basys2;
 
     wire clk256;
 
-    reg t_reset;
+    //reg t_reset;
 
     wire PS2C;
     wire PS2D;
