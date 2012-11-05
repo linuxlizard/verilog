@@ -21,7 +21,7 @@ module DISP_DRVR
     assign sound_alarm = int_sound_alarm;
     assign display = int_display;
 
-    always @(one_minute,snooze,stop_alarm,show_alarm)
+    always @(one_minute,snooze,stop_alarm,show_alarm,current_time)
     begin
         if( one_minute ) 
         begin
