@@ -21,7 +21,8 @@ module AL_Controller
       output  reg load_alarm,
       output  reg show_alarm,
       output  reg alc_shift,
-      output  reg load_new_time
+      output  reg load_new_time,
+      output reg show_keyboard
     );
 
 `define STATE_SHOW_TIME     0
@@ -44,20 +45,20 @@ module AL_Controller
         curr_state <= next_state;
     end
 
-    reg [7:0] seconds_timeout;
+    reg [7:0] seconds_timeout=0;
 
     always @(curr_state,key,one_second) 
     begin
-//        if( one_second && seconds_timeout > 0 )
-//        begin
-//            seconds_timeout <= seconds_timeout - 1;
-//        end
+        if( one_second )
+            if( seconds_timeout > 0 )
+                seconds_timeout <= seconds_timeout - 1;
 
         case( curr_state )
             `STATE_SHOW_TIME :
             begin
                 load_alarm <= 0;
                 show_alarm <= 0;
+                show_keyboard <= 0;
                 alc_shift <= 0;
                 load_new_time <= 0;
                 if( key==`KP_STAR ) 
@@ -73,6 +74,7 @@ module AL_Controller
                          key==`KP_8 || 
                          key==`KP_9  ) 
                 begin
+                    show_keyboard <= 1;
                     next_state <= `STATE_KEY_STORE;
                 end
             end
@@ -142,6 +144,7 @@ module AL_Controller
             begin
                 // stay here showing the alarm as long as the key is pressed
                 show_alarm <= 1;
+                show_keyboard <= 0;
                 if( key==`KP_KEY_RELEASED )
                     next_state <= `STATE_KEY_SHOW_ALARM_RELEASE;
             end
@@ -150,7 +153,7 @@ module AL_Controller
             begin
                 // after the key release keycode, we will get another keycode
                 // indicating which key was released. Eat that keycod here.
-                if( key==0 ) 
+                if( key==`KP_INVALID ) 
                     next_state <= `STATE_SHOW_TIME;
             end
 
@@ -158,6 +161,7 @@ module AL_Controller
             begin
                 load_alarm <= 0;
                 show_alarm <= 0;
+                show_keyboard <= 0;
                 alc_shift <= 0;
                 load_new_time <= 0;
                 next_state <= `STATE_SHOW_TIME;
