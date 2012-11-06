@@ -4,7 +4,7 @@ module al_clk_counter
     ( input clk256,
       input reset,
       input one_minute,
-      input [15:0] time_in,
+      input [15:0] time_in,  /* time in BCD format */
       input load_new_time,
 
       output [15:0] current_time_out );
