@@ -41,7 +41,7 @@ module alarm_clock
      *  FREQ_DIV to 256Hz
      */
 
-    wire clk256;
+    wire ac_clk256;
 
 `define SIMULATION 1
 `ifdef SIMULATION
@@ -54,26 +54,58 @@ module alarm_clock
     FREQ_DIV #(clock_div) run_freq_div
         (.clk(MCLK),
          .reset(reset),
-         .clk256(clk256) );
+
+         /* outputs */
+         .clk256(ac_clk256) );
 
     /*
      *  TIME_GEN
      */
+    wire ac_one_second_level;
+    wire ac_one_minute_level;
+
     wire ac_one_second;
     wire ac_one_minute;
 
     TIME_GEN run_time_gen
-        (.clk256(clk256),
+        (.clk256(ac_clk256),
          .reset(reset),
          .fast_mode(fast_mode),
-         .one_second(ac_one_second),
-         .one_minute(ac_one_minute) );
+
+         /* outputs */
+         .one_second(ac_one_second_level),
+         .one_minute(ac_one_minute_level) );
+
+    edge_to_pulse second_edge_to_pulse
+        (.clk(ac_clk256),
+         .reset(reset),
+         .edge_in(ac_one_second_level),
+         .pulse_out(ac_one_second));
+    edge_to_pulse minute_edge_to_pulse
+        (.clk(ac_clk256),
+         .reset(reset),
+         .edge_in(ac_one_minute_level),
+         .pulse_out(ac_one_minute));
+
+    /* debug counters on second/minute for simulation */
+`ifdef SIMULATION
+    integer ac_debug_second_counter = 0;
+    integer ac_debug_minute_counter = 0;
+    always @(posedge(ac_one_second))
+    begin
+        ac_debug_second_counter = ac_debug_second_counter + 1;
+    end
+    always @(posedge(ac_one_minute))
+    begin
+        ac_debug_minute_counter = ac_debug_minute_counter + 1;
+    end
+`endif
 
     /* 
      *  Seven Segment Display 
      */
 
-    wire [15:0] ac_display_input;
+    wire [15:0] ac_7seg_input;
 
     wire [6:0] ac_seg;
     wire [3:0] ac_an;
@@ -90,8 +122,10 @@ module alarm_clock
 `endif
         ( .rst(reset),
           .mclk(MCLK),
-          .word_in( ac_display_input ),
+          .word_in( ac_7seg_input ),
           .display_mask_in(4'b1111),
+
+          /* outputs */
           .seg(ac_seg),
           .an(ac_an),
           .dp(ac_dp) );
@@ -102,13 +136,17 @@ module alarm_clock
     wire ac_shift;
     wire [7:0] ac_key_code;
     wire [15:0] ac_key_buffer;
-//    wire wire_set_alarm;
-//    wire wire_set_time;
+
+    reg ac_kbd_active=0;
+
+//    wire kbd_reset;
 
     kbd_if run_kbd_if 
-        ( .clk256(clk256),
+        ( .clk256(ac_clk256),
           .reset(reset),
           .kbd_shift(ac_shift),
+
+//          .kbd_clear(ac_kbd_clear), // deviation from spec
 
           .PS2C(PS2C),
           .PS2D(PS2D),
@@ -116,6 +154,7 @@ module alarm_clock
           /* outputs */
           .key_buffer(ac_key_buffer),
           .key(ac_key_code)
+//          .kbd_active(ac_kbd_active) // deviation from spec
 //          .set_alarm(wire_set_alarm),
 //          .set_time(wire_set_time) 
         );
@@ -127,9 +166,10 @@ module alarm_clock
     wire ac_load_alarm;
     wire ac_show_alarm;
     wire ac_load_new_time;
+    wire ac_show_keyboard;
 
     AL_Controller run_al_controller
-        ( .clk256(clk256),
+        ( .clk256(ac_clk256),
 //          .reset(reset),
           .one_second(ac_one_second),
           .key(ac_key_code),
@@ -140,17 +180,19 @@ module alarm_clock
           .load_alarm(ac_load_alarm),
           .show_alarm(ac_show_alarm),
           .alc_shift(ac_shift),
-          .load_new_time(ac_load_new_time)
+          .load_new_time(ac_load_new_time),
+          .show_keyboard(ac_show_keyboard)
        );
+
+//    assign kbd_reset = reset | ac_load_new_time | ac_load_alarm;
 
     /*
      *  AL_Clk_Counter  
      */
-//    wire [15:0] ac_time_in;
     wire [15:0] ac_current_time;
 
     al_clk_counter run_al_clk_counter
-        ( .clk256(clk256),
+        ( .clk256(ac_clk256),
           .reset(reset),
           .one_minute(ac_one_minute),
           .time_in(ac_key_buffer),
@@ -167,7 +209,7 @@ module alarm_clock
     wire [15:0] curr_alarm_time;
 
     AL_Reg run_al_reg
-        (.clk256(clk256),
+        (.clk256(ac_clk256),
          .reset(reset),
          .new_alarm_time(ac_key_buffer),
          .load_alarm(ac_load_alarm),
@@ -179,6 +221,9 @@ module alarm_clock
      * Display Driver
      *
      */
+
+    wire [15:0] ac_disp_drvr_output;
+
     DISP_DRVR run_disp_drvr
         (.one_minute(ac_one_minute),
          .snooze(snooze),
@@ -188,38 +233,12 @@ module alarm_clock
          .show_alarm(ac_show_alarm),
 
          /* outputs */
-         .display( ac_display_input ),
+         .display( ac_disp_drvr_output ),
          .sound_alarm(Led[0]) );
 
-    reg [7:0] int_led;
+    assign Led[7:1] = 0;
 
-    assign Led = int_led;
-
-//    always @(posedge(reset),posedge(MCLK))
-//    begin
-//        if( reset ) 
-//        begin
-//            ac_display_input <= ac_current_time;
-//        end
-//        else
-//        begin
-//            if( ac_key_buffer != 0 ) 
-//            begin
-//                int_led <= 8'b00000001;
-//                ac_display_input <= ac_key_buffer;
-//            end
-//            else if( ac_show_alarm )
-//            begin
-//                int_led <= 8'b00000010;
-//                ac_display_input <= curr_alarm_time;
-//            end
-//            else 
-//            begin
-//                int_led <= 8'b00000100;
-//                ac_display_input <= ac_current_time;
-//            end
-//        end
-//    end
+    assign ac_7seg_input = ac_show_keyboard ? ac_key_buffer : ac_disp_drvr_output;
 
     initial
     begin
@@ -227,8 +246,8 @@ module alarm_clock
         $dumpfile("alarm_clock.vcd");
         $dumpvars(0,alarm_clock);
 
-        $monitor( "%d currtime=%x key=%x keybuffer=%x", $time, 
-                ac_current_time, ac_key_code, ac_key_buffer );
+        $monitor( "%d 7segin=%x key=%x keybuffer=%x", $time, 
+                ac_7seg_input, ac_key_code, ac_key_buffer );
 
         # 10000000;
     end
