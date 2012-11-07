@@ -33,46 +33,68 @@ module DISP_DRVR
           output reg [3:0] out_ms_min;
           output reg [3:0] out_ls_min ;
 
-//          reg [3:0] int_ms_hour;
-//          reg [3:0] int_ls_hour; 
-//          reg [3:0] int_ms_min;
-//          reg [3:0] int_ls_min ;
-    begin
-            out_ms_hour <= ms_hour;
-            out_ls_hour <= ls_hour;
-            out_ms_min <= ms_min;
-            out_ls_min <= ls_min;
+          reg [3:0] int_ms_hour;
+          reg [3:0] int_ls_hour; 
+          reg [3:0] int_ms_min;
+          reg [3:0] int_ls_min ;
 
-//            int_ls_min <= int_ls_min + 4'd1;
-            if( ls_min+4'd1 == 4'd10 )
+          reg [15:0] the_time;
+    begin
+            the_time <= { ms_hour, ls_hour, ms_min, ls_min };
+
+            int_ms_hour <= ms_hour;
+            int_ls_hour <= ls_hour;
+            int_ms_min <= ms_min;
+            int_ls_min <= ls_min;
+
+            if( the_time==16'h2359 ) begin
+                // rollover midnight to next day (00:00)
+                int_ms_hour <= 4'd0;
+                int_ls_hour <= 4'd0;
+                int_ms_min <= 4'd0;
+                int_ls_min <= 4'd4;
+
+                the_time <= the_time + 4'd5;
+            end
+            else
             begin
-                // ls_minutes overflows to ms_minutes 
-                out_ls_min <= 4'd0;
-//                int_ms_min <= int_ms_min+4'd1;
-                if( ms_min+4'd1 == 4'd6 )
+                if( ls_min+4'd1 == 4'd10 )
                 begin
-                    // minutes rolls over into hours
-                    out_ms_min <= 4'd0;
-//                    int_ls_hour <= int_ls_hour+4'd1;
-                    if( ls_hour+4'd1==4'd10 )
+                    // ls_minutes overflows to ms_minutes 
+                    int_ls_min <= 4'd0;
+                    if( ms_min+4'd1 == 4'd6 )
                     begin
-                        // ls_hours overflows to ms_hours
-                        out_ls_hour<=4'd0;
-                        out_ms_hour <= ms_hour + 4'd1;
+                        // minutes rolls over into hours
+                        int_ms_min <= 4'd0;
+                        if( ls_hour+4'd1==4'd10 )
+                        begin
+                            // ls_hours overflows to ms_hours
+                            int_ls_hour<=4'd0;
+                            int_ms_hour <= ms_hour + 4'd1;
+                        end
+                        else begin
+                            int_ls_hour <= ls_hour + 4'd1;
+                        end
+    //                    else if ( int_ms_hour==4'd2 && int_ls_hour==4'd4 ) 
+    //                    begin
+    //                        // rollover midnight to next day (00:00)
+    //                        int_ls_hour <= 4'd0;
+    //                        int_ms_hour <= 4'd0;
+    //                    end
                     end
-//                    else if ( int_ms_hour==4'd2 && int_ls_hour==4'd4 ) 
-//                    begin
-//                        // rollover midnight to next day (00:00)
-//                        int_ls_hour <= 4'd0;
-//                        int_ms_hour <= 4'd0;
-//                    end
+                    else begin
+                        int_ms_min <= ms_min + 4'd1;
+                    end
                 end
+                else begin
+                    int_ls_min <= ls_min + 4'd1;
+                end 
             end
 
-//            out_ms_hour <= int_ms_hour;
-//            out_ls_hour <= int_ls_hour;
-//            out_ms_min <= int_ms_min;
-//            out_ls_min <= int_ls_min;
+            out_ms_hour <= int_ms_hour;
+            out_ls_hour <= int_ls_hour;
+            out_ms_min <= int_ms_min;
+            out_ls_min <= int_ls_min;
     end
     endtask
 
