@@ -8,7 +8,8 @@ ALL=test_register test_counter test_mux test_carry_lookahead test_adder\
 
 FLAGS=-Wall -D SIMULATION=1
 
-all : basys2
+all : test_disp_drvr
+#all : basys2
 #all : $(ALL)
 
 test_al_controller : PS2_Keyboard.v kbd_if.v test_al_controller.v freq_div.v al_controller.v
@@ -21,6 +22,9 @@ test_al_clk_counter : al_clk_counter.v test_al_clk_counter.v\
 basys2 : time_gen.v freq_div.v al_controller.v stub_digits_to_7seg.v basys2.v\
         al_clk_counter.v PS2_Keyboard.v kbd_if.v disp_drvr.v alarm_clock.v\
         al_reg.v edge_to_pulse.v disp_drvr.v
+	iverilog $(FLAGS) -o $@ $^
+
+test_disp_drvr : disp_drvr.v test_disp_drvr.v
 	iverilog $(FLAGS) -o $@ $^
 
 test_bcd_clock : bcd_clock.v test_bcd_clock.v
