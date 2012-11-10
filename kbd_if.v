@@ -10,12 +10,12 @@
 `include "keycodes.vh"
 
 module kbd_if
-    ( input clk256,
+    ( input clk,
       input reset,
       input kbd_shift,
 
-      inout PS2C,
-      inout PS2D,
+      input PS2C,
+      input PS2D,
 
       output reg [15:0] key_buffer, // BCD value
       output reg [7:0] key // actual key codes
@@ -29,12 +29,12 @@ module kbd_if
 //    reg [7:0 ] last_key_pressed;
 
     PS2_Keyboard ps2kbd
-        (.ck(clk256),
+        (.ck(clk),
          .PS2C(PS2C),
          .PS2D(PS2D),
          .ps2_key_code(kbd_key_code) );
 
-    always @(posedge clk256,posedge reset)
+    always @(posedge clk,posedge reset)
     begin
         if( reset ) 
         begin
@@ -53,68 +53,57 @@ module kbd_if
                 begin
 //                    key_buffer <= {12'hfff,`KP_0_BCD}; 
                     key_buffer <= {key_buffer[11:0],`KP_0_BCD}; 
-//                    kbd_key_buffer <= {kbd_key_buffer[11:0],`KP_0_BCD}; 
                 end
 
                 `KP_1 : 
                 begin
 //                    key_buffer <= {8'hef,`KP_1_BCD}; 
                     key_buffer <= {key_buffer[11:0],`KP_1_BCD}; 
-//                    kbd_key_buffer <= {kbd_key_buffer[11:0],`KP_1_BCD}; 
                 end
 
                 `KP_2 : 
                 begin
                     key_buffer <= {key_buffer[11:0],`KP_2_BCD}; 
-//                    kbd_key_buffer <= {kbd_key_buffer[11:0],`KP_2_BCD}; 
                 end
 
                 `KP_3 : 
                 begin
                     key_buffer <= {key_buffer[11:0],`KP_3_BCD}; 
-//                    kbd_key_buffer <= {kbd_key_buffer[11:0],`KP_3_BCD}; 
                 end
 
                 `KP_4 : 
                 begin
                     key_buffer <= {key_buffer[11:0],`KP_4_BCD}; 
-//                    kbd_key_buffer <= {kbd_key_buffer[11:0],`KP_4_BCD}; 
                 end
 
                 `KP_5 : 
                 begin
                     key_buffer <= {key_buffer[11:0],`KP_5_BCD}; 
-//                    kbd_key_buffer <= {kbd_key_buffer[11:0],`KP_5_BCD}; 
                 end
 
                 `KP_6 : 
                 begin
                     key_buffer <= {key_buffer[11:0],`KP_6_BCD}; 
-//                    kbd_key_buffer <= {kbd_key_buffer[11:0],`KP_6_BCD}; 
                 end
 
                 `KP_7 : 
                 begin
                     key_buffer <= {key_buffer[11:0],`KP_7_BCD}; 
-//                    kbd_key_buffer <= {kbd_key_buffer[11:0],`KP_7_BCD}; 
                 end
 
                 `KP_8 : 
                 begin
                     key_buffer <= {key_buffer[11:0],`KP_8_BCD}; 
-//                    kbd_key_buffer <= {kbd_key_buffer[11:0],`KP_8_BCD}; 
                 end
 
                 `KP_9 : 
                 begin
                     key_buffer <= {key_buffer[11:0],`KP_9_BCD}; 
-//                    kbd_key_buffer <= {kbd_key_buffer[11:0],`KP_9_BCD}; 
                 end
 
                 default : 
                 begin
                     key_buffer <= {key_buffer[11:0], 4'hf}; 
-//                    kbd_key_buffer <= {kbd_key_buffer[11:0],4'hf}; 
                 end
             endcase
         end
