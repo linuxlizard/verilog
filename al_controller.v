@@ -11,7 +11,7 @@
 `include "keycodes.vh"
 
 module AL_Controller
-    ( input  clk256,
+    ( input  clk,
 //      input  reset,
       input  one_second,
       input [7:0] key,
@@ -40,7 +40,7 @@ module AL_Controller
 
 //    reg [7:0] curr_key;
 
-    always @(posedge(clk256))
+    always @(posedge(clk))
     begin
         curr_state <= next_state;
     end
