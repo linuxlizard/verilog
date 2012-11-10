@@ -5,8 +5,11 @@ module alarm_clock
       input [7:0] sw,
       input [3:0] btn,
 
-      inout PS2C,
-      inout PS2D,
+      input PS2C,
+      input PS2D,
+
+      /* JA 1,2,3,4 (used with debugging) */
+      output [87:72] PIO, 
 
       output [7:0] Led,
       output [6:0] seg,
@@ -19,6 +22,18 @@ module alarm_clock
     assign fast_mode = sw[0];
     assign reset = sw[7];
     
+//    assign PIO[73] = MCLK;
+//    assign PIO[74] = sw[2];
+//    assign PIO[75] = sw[3];
+//    assign PIO[76] = sw[4];
+//    assign PIO[77] = MCLK;
+//    assign PIO[87] = ac;
+
+//    assign B2 = sw[1];
+//    assign A3 = sw[2];
+//    assign J3 = sw[3];
+//    assign B5 = sw[4];
+
     /*
      * Edge to Pulse Snooze and Alarm Off
      */
@@ -43,7 +58,16 @@ module alarm_clock
 
     wire ac_clk256;
 
-`define SIMULATION 1
+    assign PIO[75:72] = {4{1'bZ}};
+//    assign PIO[83:72] = {12{1'bZ}};
+//
+//    assign PIO[83:77] = ac_key_code;
+
+//    assign PIO[84] = btn[3];
+    assign PIO[85] = sw[3];
+    assign PIO[86] = sw[4];
+    assign PIO[87] = ac_clk256;
+
 `ifdef SIMULATION
     localparam clock_div = 1;  /* counts 0,1,0,1,0,1,0,1,... */
 `else
@@ -137,12 +161,15 @@ module alarm_clock
     wire [7:0] ac_key_code;
     wire [15:0] ac_key_buffer;
 
+    assign PIO[83:76] = ac_key_code;
+
     reg ac_kbd_active=0;
 
 //    wire kbd_reset;
 
     kbd_if run_kbd_if 
-        ( .clk256(ac_clk256),
+        ( //.clk256(ac_clk256),
+          .clk(MCLK),
           .reset(reset),
           .kbd_shift(ac_shift),
 
@@ -169,7 +196,7 @@ module alarm_clock
     wire ac_show_keyboard;
 
     AL_Controller run_al_controller
-        ( .clk256(ac_clk256),
+        ( .clk(ac_clk256),
 //          .reset(reset),
           .one_second(ac_one_second),
           .key(ac_key_code),
@@ -185,6 +212,8 @@ module alarm_clock
        );
 
 //    assign kbd_reset = reset | ac_load_new_time | ac_load_alarm;
+
+    assign PIO[84] = ac_shift;
 
     /*
      *  AL_Clk_Counter  
@@ -240,6 +269,7 @@ module alarm_clock
 
     assign ac_7seg_input = ac_show_keyboard ? ac_key_buffer : ac_disp_drvr_output;
 
+`ifdef SIMULATION
     initial
     begin
         $display("Hello, world");
@@ -251,6 +281,7 @@ module alarm_clock
 
         # 10000000;
     end
+`endif
 
 endmodule
 
