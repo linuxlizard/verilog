@@ -19,23 +19,6 @@ module TIME_GEN
 
     reg int_one_minute = 1'b0;
 
-//    reg seconds_edge; 
-//    wire seconds_pulse;
-//    reg minutes_edge;
-//    wire minutes_pulse;
-
-//    edge_to_pulse seconds_edge_to_pulse
-//        (.clk(clk256),
-//         .reset(reset),
-//         .edge_in(sec_counter[7]),
-//         .pulse_out(seconds_pulse) );
-//
-//    edge_to_pulse minutes_edge_to_pulse
-//        (.clk(clk256),
-//         .reset(reset),
-//         .edge_in(minutes_edge),
-//         .pulse_out(minutes_pulse) );
-
     // 256Hz means we can count once per clock in a 9-bit counter. The overflow
     // (9th) bit is our one second clock.
     always @(posedge clk256, posedge reset )
