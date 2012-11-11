@@ -24,5 +24,5 @@
 `define KP_8_BCD 4'h8
 `define KP_9_BCD   4'h9
 
-`define KP_INVALID 8'hff
+`define KP_INVALID 8'hee
 
