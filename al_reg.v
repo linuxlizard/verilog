@@ -8,13 +8,13 @@
 `timescale 1 ns / 10 ps
 
 module AL_Reg
-    ( input wire clk256,
+    ( input wire clk,
       input wire reset,
       input wire [15:0] new_alarm_time,
       input wire load_alarm,
       output reg [15:0] alarm_time );
 
-    always @(posedge clk256, posedge reset )
+    always @(posedge clk, posedge reset )
     begin
         if( reset ) 
         begin
