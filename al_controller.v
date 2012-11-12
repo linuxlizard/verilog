@@ -112,6 +112,7 @@ parameter STATE_KEY_SHOW_ALARM_RELEASE = 4'd8;
             begin
 //                show_keyboard <= 1'b0;
 //                alc_shift <= 0;
+                key_buffer <= 16'h0000;
                 if( key==`KP_STAR ) begin
                     next_state <= STATE_SHOW_ALARM;
                 end 
@@ -133,7 +134,6 @@ parameter STATE_KEY_SHOW_ALARM_RELEASE = 4'd8;
                     show_keyboard <= 1'b0;
                     next_state <= STATE_SHOW_TIME;
                 end
-
             end
 
             STATE_KEY_STORE :
