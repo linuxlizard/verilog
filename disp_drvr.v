@@ -186,9 +186,9 @@ module DISP_DRVR
 
     always @*
     begin
-//        next_snooze <= curr_snooze;
-//        next_state <= curr_state;
-//        int_sound_alarm <= 1'b0;
+        next_snooze = curr_snooze;
+        next_state = curr_state;
+        int_sound_alarm = 1'b0;
 
         case( curr_state ) 
             STATE_WAIT_FOR_ALARM :
