@@ -83,7 +83,7 @@ module al_clk_counter
     begin
         if( reset ) 
         begin
-            bcd_clock_minute( 0, 0, 0, 0, 0,
+            bcd_clock_minute( 1'd0, 4'd1, 4'd2, 4'd0, 4'd0,
                               bcd_ms_hour_out,
                               bcd_ls_hour_out,
                               bcd_ms_min_out,
