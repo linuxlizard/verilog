@@ -22,18 +22,6 @@ module alarm_clock
     assign fast_mode = sw[0];
     assign reset = sw[7];
     
-//    assign PIO[73] = MCLK;
-//    assign PIO[74] = sw[2];
-//    assign PIO[75] = sw[3];
-//    assign PIO[76] = sw[4];
-//    assign PIO[77] = MCLK;
-//    assign PIO[87] = ac;
-
-//    assign B2 = sw[1];
-//    assign A3 = sw[2];
-//    assign J3 = sw[3];
-//    assign B5 = sw[4];
-
     /*
      * Edge to Pulse Snooze and Alarm Off
      */
@@ -157,22 +145,14 @@ module alarm_clock
     /*
      *   KBD_IF 
      */
-//    wire ac_shift;
     wire [7:0] ac_key_code;
 //    wire [15:0] ac_key_buffer;
 
 //    assign PIO[83:76] = ac_key_code;
 
-//    reg ac_kbd_active=0;
-
-//    wire kbd_reset;
-
     kbd_if run_kbd_if 
         ( .clk(MCLK),
           .reset(reset),
-//          .kbd_shift(ac_shift),
-
-//          .kbd_clear(ac_kbd_clear), // deviation from spec
 
           .PS2C(PS2C),
           .PS2D(PS2D),
@@ -202,31 +182,17 @@ module alarm_clock
           .reset(reset),
           .one_second(ac_one_second),
           .key(ac_key_code),
-//          .set_alarm(1'b0), // on the spec but not used; a key (*) used for set alarm
-//          .set_time(1'b0),  // on the spec but not used; a key (-) used for set time
           
           /* outputs */
           .out_key_buffer(ac_key_buffer),
           .load_alarm(ac_load_alarm),
           .show_alarm(ac_show_alarm),
-//          .alc_shift(ac_shift),
           .load_new_time(ac_load_new_time),
           .out_show_keyboard(ac_show_keyboard),
 
           .debug_state_out(alc_state),
           .debug_seconds_out(alc_seconds_time)
        );
-
-//    assign kbd_reset = reset | ac_load_new_time | ac_load_alarm;
-
-//    assign PIO[84] = ac_shift;
-    assign PIO[84] = ac_load_new_time;
-    assign PIO[85] = ac_show_keyboard;
-    assign PIO[86] = ac_load_alarm;
-    assign PIO[87] = ac_one_second;
-
-    assign PIO[83:76] = { alc_seconds_time[3:0], alc_state } ;
-//    assign PIO[83:76] = { ac_key_code[7:4], alc_state } ;
 
     /*
      *  AL_Clk_Counter  
@@ -266,9 +232,15 @@ module alarm_clock
 
     wire [15:0] ac_disp_drvr_output;
 
+    wire ac_sound_alarm;
+
+    wire [2:0] disp_state;
+    wire [7:0] disp_debug_snooze;
+
     DISP_DRVR run_disp_drvr
-        (.reset(reset),
-         .one_minute(ac_one_minute),
+        (.clk(MCLK),
+         .reset(reset),
+//         .one_minute(ac_one_minute),
          .do_snooze(ac_snooze_button),
          .stop_alarm(ac_alarm_off_button),
          .alarm_time(curr_alarm_time),
@@ -277,14 +249,31 @@ module alarm_clock
 
          /* outputs */
          .display( ac_disp_drvr_output ),
-         .sound_alarm(Led[0]) );
+         .int_sound_alarm(ac_sound_alarm),
+//         .sound_alarm(ac_sound_alarm)
+          .debug_snooze(disp_debug_snooze),
+          .debug_state_out(disp_state)
+         );
 
+    assign Led[0] = ac_sound_alarm;
     assign Led[5:1] = 0;
     assign Led[7] = ac_one_second_level;
     assign Led[6] = ac_one_minute_level;
 
-//    assign ac_7seg_input = ac_key_buffer;
     assign ac_7seg_input = ac_show_keyboard ? ac_key_buffer : ac_disp_drvr_output;
+
+    /* Logic Analyzer */
+//    assign PIO[84] = ac_shift;
+    assign PIO[84] = ac_snooze_button;
+    assign PIO[85] = ac_alarm_off_button;
+    assign PIO[86] = ac_sound_alarm;
+    assign PIO[87] = ac_one_minute;
+
+    assign PIO[83:76] = { disp_debug_snooze };
+//    assign PIO[83:76] = { 5'd0, disp_state };
+//    assign PIO[83:76] = { curr_alarm_time[15:8] };
+//    assign PIO[83:76] = { alc_seconds_time[3:0], alc_state } ;
+//    assign PIO[83:76] = { ac_key_code[7:4], alc_state } ;
 
 `ifdef SIMULATION
     initial
