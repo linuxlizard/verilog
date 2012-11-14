@@ -12,22 +12,14 @@
 module kbd_if
     ( input clk,
       input reset,
-//      input kbd_shift,
 
       input PS2C,
       input PS2D,
 
-//      output reg [15:0] key_buffer, // BCD value
       output reg [7:0] key // actual key codes
-//      output reg set_alarm, // (ignored) handled in AL_Controller
-//      output reg set_time   // (ignored) handled in AL_Controller
     );
 
-//    reg [15:0] key_buffer; // BCD value
     wire [7:0] kbd_key_code;
-//    reg [15:0] kbd_key_buffer;
-
-//    reg [7:0 ] last_key_pressed;
 
     PS2_Keyboard ps2kbd
         (.ck(clk),
@@ -40,74 +32,7 @@ module kbd_if
         if( reset ) 
         begin
             key <= 0;
-//            key_buffer <= 0;
-//            set_time <= 0;
-//            set_alarm <= 0;
-
-//            kbd_key_buffer <= 0;
         end
-//        else if( kbd_shift == 1) 
-//        begin
-//            /* Copy/paste. Brute Force. */
-//            case( key )
-//                `KP_0 : 
-//                begin
-////                    key_buffer <= {12'hfff,`KP_0_BCD}; 
-//                    key_buffer <= {key_buffer[11:0],`KP_0_BCD}; 
-//                end
-//
-//                `KP_1 : 
-//                begin
-////                    key_buffer <= {8'hef,`KP_1_BCD}; 
-//                    key_buffer <= {key_buffer[11:0],`KP_1_BCD}; 
-//                end
-//
-//                `KP_2 : 
-//                begin
-//                    key_buffer <= {key_buffer[11:0],`KP_2_BCD}; 
-//                end
-//
-//                `KP_3 : 
-//                begin
-//                    key_buffer <= {key_buffer[11:0],`KP_3_BCD}; 
-//                end
-//
-//                `KP_4 : 
-//                begin
-//                    key_buffer <= {key_buffer[11:0],`KP_4_BCD}; 
-//                end
-//
-//                `KP_5 : 
-//                begin
-//                    key_buffer <= {key_buffer[11:0],`KP_5_BCD}; 
-//                end
-//
-//                `KP_6 : 
-//                begin
-//                    key_buffer <= {key_buffer[11:0],`KP_6_BCD}; 
-//                end
-//
-//                `KP_7 : 
-//                begin
-//                    key_buffer <= {key_buffer[11:0],`KP_7_BCD}; 
-//                end
-//
-//                `KP_8 : 
-//                begin
-//                    key_buffer <= {key_buffer[11:0],`KP_8_BCD}; 
-//                end
-//
-//                `KP_9 : 
-//                begin
-//                    key_buffer <= {key_buffer[11:0],`KP_9_BCD}; 
-//                end
-//
-//                default : 
-//                begin
-//                    key_buffer <= {key_buffer[11:0], 4'hf}; 
-//                end
-//            endcase
-//        end
         else 
         begin
             // filter incoming codes; only pass the values we're expecting
