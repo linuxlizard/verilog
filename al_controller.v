@@ -90,7 +90,7 @@ parameter STATE_KEY_SHOW_ALARM_RELEASE = 4'd8;
         end
     end
 
-    always @*
+    always @( curr_state, key )
     begin
 
         key_buffer <= curr_key_buffer;
