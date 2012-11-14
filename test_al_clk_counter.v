@@ -44,12 +44,15 @@ module test_al_clk_counter;
 //         .q(time_reg_out));
          
     al_clk_counter run_al_clk_counter
-        ( .clk256(t_clk256),
+        ( .clk(MCLK),
           .reset(t_reset),
           .one_minute(t_one_minute),
           .time_in(t_time_in),
           .load_new_time(t_load_new_time),
-          .current_time_out(t_current_time_out));
+
+          /* outputs */
+          .current_time_out(t_current_time_out)
+        );
 
     integer i;
 
@@ -75,14 +78,14 @@ module test_al_clk_counter;
         t_load_new_time = 0;
         # `PERIOD;
 
-        @(posedge t_clk256)
+//        @(posedge t_clk256)
         t_one_minute = 1;     /* +1 minute*/
         # `PERIOD;
 
         t_one_minute = 0;
         # `PERIOD;
 
-        @(posedge t_clk256)
+//        @(posedge t_clk256)
         t_one_minute = 1;     /* +1 minute*/
         # `PERIOD;
 
@@ -93,7 +96,7 @@ module test_al_clk_counter;
         for( i=0 ; i<10 ; i=i+1 ) 
         begin
             $display( "i=%d", i );
-            @(posedge t_clk256)
+//            @(posedge t_clk256)
             t_one_minute = 1;
             # `PERIOD;
 
@@ -102,7 +105,7 @@ module test_al_clk_counter;
 
         end
 
-        @(posedge t_clk256)
+//        @(posedge t_clk256)
         t_time_in = 16'h1630;  /* beer thirty */
         t_load_new_time =1;
         # `PERIOD;
@@ -115,7 +118,7 @@ module test_al_clk_counter;
         for( i=0 ; i<30 ; i=i+1 ) 
         begin
             $display( "i=%d", i );
-            @(posedge t_clk256)
+//            @(posedge t_clk256)
             t_one_minute = 1;
             # `PERIOD;
 

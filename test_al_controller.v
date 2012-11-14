@@ -36,45 +36,44 @@ module test_al_controller;
     wire ps2d;
 
     wire [7:0] t_key_in;
-    wire [31:0] int_key_buffer;
+    wire [15:0] int_key_buffer;
 
     wire wire_set_alarm;
     wire wire_set_time;
 
     kbd_if run_kbd_if 
-        ( .clk256(t_clk256),
+        ( .clk(MCLK),
           .reset(t_reset),
-          .shift(t_shift),
 
           .PS2C(ps2c),
           .PS2D(ps2d),
 
           /* outputs */
-          .key_buffer(int_key_buffer),
-          .key(t_key_in),
-          .set_alarm(wire_set_alarm),
-          .set_time(wire_set_time) );
+          .key(t_key_in)
+        );
 
     /*
      *  AL Controller
      */
     wire t_load_alarm;
     wire t_show_alarm;
-    wire t_shift;
     wire t_load_new_time;
+    wire t_show_keyboard;
 
     AL_Controller run_al_clk_counter
-        ( .clk256(t_clk256),
+        ( .clk(MCLK),
           .reset(t_reset),
           .one_second(t_one_second),
           .key(t_key_in),
-          .set_alarm(0), // on the spec but not used; a key (*) used for set alarm
-          .set_time(0),  // on the spec but not used; a key (-) used for set time
+//          .set_alarm(0), // on the spec but not used; a key (*) used for set alarm
+//          .set_time(0),  // on the spec but not used; a key (-) used for set time
           
+          /* outputs */
+          .out_key_buffer(int_key_buffer),
           .load_alarm(t_load_alarm),
           .show_alarm(t_show_alarm),
-          .shift(t_shift),
-          .load_new_time(t_load_new_time)
+          .load_new_time(t_load_new_time),
+          .out_show_keyboard(t_show_keyboard)
        );
 
     initial
@@ -84,8 +83,8 @@ module test_al_controller;
         $dumpfile("test_al_controller.vcd");
         $dumpvars(0,test_al_controller);
 
-        $monitor( "%d load_alarm=%d show_alarm=%d shift=%d load_new_time=%d disp=%x", 
-                $time, t_load_alarm, t_show_alarm, t_shift, t_load_new_time,
+        $monitor( "%d load_alarm=%d show_alarm=%d load_new_time=%d disp=%x", 
+                $time, t_load_alarm, t_show_alarm, t_load_new_time,
                 int_key_buffer );
 
         # `PERIOD;
