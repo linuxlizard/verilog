@@ -45,9 +45,12 @@ module PS2_Keyboard
 //        endcase
     end
 
-`define KEY_DELAY 500
+`define KEY_DELAY 50
     initial
     begin
+        $display("Hello from PS2_keyboard");
+
+        ps2_key_code <= 8'd0;
         /*
          *      Load Clock Time 12:34
          */
