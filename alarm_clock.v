@@ -126,7 +126,7 @@ module alarm_clock
 
     wire [15:0] ac_key_buffer;
 
-`ifdef foo_SIMULATION
+`ifdef SIMULATION
     stub_digits_to_7seg run_digits_to_7seg 
 `else
     hex_to_7seg run_digits_to_7seg 
@@ -278,7 +278,7 @@ module alarm_clock
 `ifdef SIMULATION
     initial
     begin
-        $display("Hello, world");
+        $display("Hello from alarm_clock");
         $dumpfile("alarm_clock.vcd");
         $dumpvars(0,alarm_clock);
 
