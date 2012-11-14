@@ -69,7 +69,31 @@ module basys2;
         sw = 8'd2; // turn off reset, turn on fast mode 
         # `PERIOD;
 
+//        # 700000;
+
+        @(posedge Led[0]);
+        $display( "alarm ringing! at %d", $time );
+        $display( "push the snooze button" );
+        btn[0] = 1'b1;
+        # `PERIOD;
+        # `PERIOD;
+        # `PERIOD;
+        # `PERIOD;
+        btn[0] = 1'b0;
+            
+        @(posedge Led[0]);
+        $display( "alarm ringing! at %d", $time );
+        $display( "push the stop button" );
+        btn[1] = 1'b1;
+        # `PERIOD;
+        # `PERIOD;
+        # `PERIOD;
+        # `PERIOD;
+        btn[1] = 1'b0;
+            
+
         # 700000;
+
 //        $finish;
     end
 
