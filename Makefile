@@ -8,9 +8,13 @@ ALL=test_register test_counter test_mux test_carry_lookahead test_adder\
 
 FLAGS=-Wall -D SIMULATION=1
 
-all : test_disp_drvr
+#all : test_disp_drvr
 #all : basys2
 #all : $(ALL)
+all : test_pic
+
+test_pic : test_pic.v pic.v register.v
+	iverilog $(FLAGS) -o $@ $^
 
 test_al_controller : PS2_Keyboard.v kbd_if.v test_al_controller.v freq_div.v al_controller.v
 	iverilog $(FLAGS) -o $@ $^
