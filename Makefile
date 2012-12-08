@@ -4,7 +4,7 @@
 
 ALL=test_register test_counter test_mux test_carry_lookahead test_adder\
     test_adder_acc basys2 test_edge_to_pulse test_freq_div test_time_gen\
-    test_bcd_clock test_kbd_if
+    test_bcd_clock test_kbd_if test_pic
 
 FLAGS=-Wall -D SIMULATION=1
 

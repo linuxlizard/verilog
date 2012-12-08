@@ -1,7 +1,7 @@
 
 /* values for PIC readwrite bit */
-`define RW_READ 1'b0
-`define RW_WRITE 1'b1
+`define RW_READ 1'b1
+`define RW_WRITE 1'b0
 
 /* register values; used with the PIC select bits */
 `define SEL_OCR 2'b00
