@@ -1,4 +1,12 @@
+// Test PIC
+//
+// David Poole
+// ECE530 Fall 2012
+//
+
 `timescale 1 ns / 10 ps
+
+`include "pic.vh"
 
 module test_pic;
 
@@ -11,8 +19,8 @@ module test_pic;
     reg reset = 1'b0;
 
     wire [7:0] t_data;
-    reg [1:0] t_select;
-    reg t_readwrite;
+    reg [1:0] t_select = `SEL_OCR;
+    reg t_readwrite = `RW_READ;
     reg [7:0] t_IR;
     reg t_intack;
     wire t_int;

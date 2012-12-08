@@ -5,6 +5,8 @@
 
 `timescale 1 ns / 10 ps
 
+`include "pic.vh"
+
 module pic
     ( input wire clk,
       input wire reset,
@@ -60,5 +62,17 @@ module pic
          .d(int_data),
          .q(isr_data));
 
+    always @(readwrite)
+    begin
+        if( readwrite==RW_READ ) 
+        begin
+            case( select )
+                SEL_OCR 
+
+        else 
+        begin
+        end
+    end
+    
 endmodule
 
