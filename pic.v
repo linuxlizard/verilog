@@ -123,7 +123,7 @@ module pic
     reg [7:0] irq_priority_list [7:0];
 
     /* index of most recently serviced interrupt */
-    reg [2:0] irq_priority_idx = 4'h0;
+//    reg [2:0] irq_priority_idx = 4'h0;
     `include "irq_list.vh"
 
     reg [7:0] next_data = 8'hzz;
@@ -132,18 +132,18 @@ module pic
     /*
      *  PIC State Machine
      */
-    parameter STATE_RESET = 4'd0;
-    parameter STATE_INIT = 4'd1;
-    parameter STATE_WAIT_FOR_ACK_1_LOW = 4'd2;
-    parameter STATE_WAIT_FOR_ACK_1_HIGH = 4'd3;
-    parameter STATE_WAIT_FOR_SECOND_ACK = 4'd4;
-    parameter STATE_DRIVE_DATA_POINTER = 4'd5;
-    parameter STATE_CLEAR_IRR = 4'd6;
+    parameter STATE_RESET = 5'd0;
+    parameter STATE_INIT = 5'd1;
+    parameter STATE_WAIT_FOR_ACK_1_LOW = 5'd2;
+    parameter STATE_WAIT_FOR_ACK_1_HIGH = 5'd3;
+    parameter STATE_WAIT_FOR_SECOND_ACK = 5'd4;
+    parameter STATE_DRIVE_DATA_POINTER = 5'd5;
+    parameter STATE_CLEAR_IRR = 5'd6;
 
-    reg [5:0] next_state;
-    reg [5:0] curr_state;
+    reg [4:0] next_state;
+    reg [4:0] curr_state;
 
-    wire [5:0] debug_state;
+    wire [4:0] debug_state;
     assign debug_state = curr_state;
 
     /* pending interrupt number */
@@ -193,18 +193,18 @@ module pic
         case( curr_state ) 
             STATE_RESET  :
             begin
-                $display("state_reset");
+//                $display("state_reset");
                 next_state <= STATE_INIT;
                 priority_list_init;
             end
 
             STATE_INIT  :
             begin
-                $display( "state_init" );
+//                $display( "state_init" );
                 if( intreq != 8'h00 ) 
                 begin
                     /* we have an incoming interrupt */
-                    $display( "incoming interrupt" );
+//                    $display( "incoming interrupt" );
 
                     next_state <= STATE_WAIT_FOR_ACK_1_LOW;
 
@@ -223,7 +223,7 @@ module pic
 
             STATE_WAIT_FOR_ACK_1_LOW  :
             begin
-                $display("waiting for ack_1 low");
+//                $display("waiting for ack_1 low");
                 /* intackN line is default high; wait for CPU to drive it low */
                 if( intackN==1'b0 ) 
                 begin
@@ -233,7 +233,7 @@ module pic
 
             STATE_WAIT_FOR_ACK_1_HIGH  :
             begin
-                $display("waiting for ack_1 high");
+//                $display("waiting for ack_1 high");
                 /* clear the bit of the ISR we're going to handle */
                 irr_clr <= 1'b1;
                 irr_data_in <= 8'h01<<irq_num;
@@ -253,7 +253,7 @@ module pic
 
             STATE_WAIT_FOR_SECOND_ACK  :
             begin
-                $display("wait for second ack");
+//                $display("wait for second ack");
                 /* CPU can read registers while we're fiddling around waiting
                  * for the ack(s). That's why we set the data bus to 'Z' in the
                  * previous state. So the CPu can query registers. Not sure how
@@ -267,7 +267,7 @@ module pic
 
             STATE_DRIVE_DATA_POINTER  :
             begin
-                $display("driving the vector onto the bus" );
+//                $display("driving the vector onto the bus" );
 
                 /* drive the interrupt vector onto the bus */
                 next_data <= { 5'b10100, irq_num };
@@ -281,7 +281,7 @@ module pic
 
             STATE_CLEAR_IRR  :
             begin
-                $display("clear irr" );
+//                $display("clear irr" );
                 next_state <= STATE_INIT;
 
                 /* clear the IRQ bit from ISR register */
