@@ -4,16 +4,20 @@
 
 ALL=test_register test_counter test_mux test_carry_lookahead test_adder\
     test_adder_acc basys2 test_edge_to_pulse test_freq_div test_time_gen\
-    test_bcd_clock test_kbd_if test_pic
+    test_bcd_clock test_kbd_if test_pic irr
 
 FLAGS=-Wall -D SIMULATION=1
 
 #all : test_disp_drvr
 #all : basys2
 #all : $(ALL)
+#all : irr 
 all : test_pic
 
-test_pic : test_pic.v pic.v register.v
+irr : irr.v 
+	iverilog $(FLAGS) -o $@ $^
+
+test_pic : test_pic.v pic.v register.v 
 	iverilog $(FLAGS) -o $@ $^
 
 test_al_controller : PS2_Keyboard.v kbd_if.v test_al_controller.v freq_div.v al_controller.v

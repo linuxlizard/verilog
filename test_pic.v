@@ -15,17 +15,22 @@ module test_pic;
 
     reg MCLK = 1'b0;
 
-    // this project uses an nReset so start at zero (reset enabled)
-    reg reset = 1'b0;
+    // this project uses an nReset so start at zero (resetN enabled)
+    reg resetN = 1'b0;
 
     wire [7:0] data_wire;
     reg [7:0] t_data = 8'hff;
     reg [1:0] t_select = `SEL_OCR;
     reg t_readwrite = `RW_READ;
-    reg [7:0] t_intreq;
-    reg t_intack;
+    reg [7:0] t_intreq = 8'h00;
+    reg t_intackN = 1'b1;
     wire t_int;
     reg [7:0] t_test= 8'h00;
+
+    /* test/debug in simulation; change this number to track code location
+     * during simulation
+     */
+    integer debug_num = 0;
 
     /* This is the clock */
     always
@@ -37,30 +42,18 @@ module test_pic;
 
     pic run_pic
         (.clk(MCLK),
-         .reset(reset),
+         .resetN(resetN),
          .data(data_wire),
          .select(t_select),
          .readwrite(t_readwrite),
          .intreq(t_intreq),
-         .intack(t_intack),
+         .intackN(t_intackN),
 
          // output(s)
-         .int(t_int));
+         .int_out(t_int));
 
-    initial
+    task test_registers;
     begin
-        $display("Hello, world");
-        $dumpfile("test_pic.vcd");
-        $dumpvars(0,test_pic);
-
-        $monitor("%d int=%d data=%x", $time, t_int, data_wire );
-
-        # period;
-        # period;
-
-        reset = 1'b1;
-//        # period;
-
         t_test = 8'h01;
         t_data = 8'hzz;
         t_select = `SEL_OCR;
@@ -97,11 +90,130 @@ module test_pic;
         t_select = `SEL_IMR;
         t_readwrite = `RW_READ;
         # period;
+    end
+    endtask
 
-//        # 1000;
+    task quick_pulse_intackN;
+    begin
+        $display("pulsing intackN" );
+        t_intackN = 1'b0;
+        # period;
+        t_intackN = 1'b1;
+        # period;
+    end
+    endtask
+
+    task test_single_interrupt;
+    begin
+        $display( "test_single_interrupt");
+        t_intreq = 8'h04;
+        # period;
+
+        $display( "waiting for int=1" );
+        wait(t_int==1'b1);
+        $display( "got int=%x", t_int );
+
+        /* pulse the ack line, drop the incoming interrupt */
+        $display("pulsing intackN" );
+        t_intreq = 8'h00;
+//        t_intackN = 1'b0;
+//        # period;
+//        t_intackN = 1'b1;
+//        # period;
+        quick_pulse_intackN;
+
+        /* wait several clocks (TODO read some registers here) */
+        # period; # period; # period; # period;
+        # period; # period; # period; # period;
+
+        /* pulse the ack line again */
+        $display("pulsing intackN" );
+//        t_intackN = 1'b0;
+//        # period;
+//        t_intackN = 1'b1;
+//        # period;
+        quick_pulse_intackN;
+
+        $display( "waiting for int=0" );
+        wait(t_int==1'b0);
+        # period;
+
+        $display( "test_single_interrupt done");
+    end
+    endtask
+
+    task test_multiple_interrupt;
+    begin
+        $display( "test_multiple_interrupt" );
+
+        t_intreq = 8'h05;
+        # period;
+
+        $display( "waiting for int=1" );
+        wait(t_int==1'b1);
+        $display( "got int=%x", t_int );
+
+        /* pulse the ack line */
+        $display("pulsing intackN" );
+        quick_pulse_intackN;
+
+        /* wait several clocks (TODO read some registers here) */
+        # period; # period; # period; # period;
+        # period; # period; # period; # period;
+
+        /* drop the 1st interrupt */
+        t_intreq = 8'h04;
+
+        /* pulse the ack line again */
+        $display("pulsing intackN" );
+        quick_pulse_intackN;
+
+        /* now handle the 2nd interrupt we requested */
+        $display( "handling second interrupt" );
+        wait(t_int==1'b1);
+
+        /* FIXME have to put some time between the acks */
         # period;
         # period;
+
+        /* for now, just ack the 2nd interrupt */
+        quick_pulse_intackN;
+//        # period;
+        t_intreq = 8'h00;
+        quick_pulse_intackN;
+
+        $display( "waiting for int=0" );
+        wait(t_int==1'b0);
+
+        $display( "test_multiple_interrupt done");
+    end
+    endtask
+
+    initial
+    begin
+        $display("Hello, world");
+        $dumpfile("test_pic.vcd");
+        $dumpvars(0,test_pic);
+
+        $monitor("%d int=%d data=%x", $time, t_int, data_wire );
+
+        t_data = 8'hzz;
         # period;
+        # period;
+
+        resetN = 1'b1;
+        debug_num = 1;
+        # period;
+
+        debug_num = 10;
+        test_single_interrupt;
+        
+        debug_num = 20;
+        test_multiple_interrupt;
+
+        # 1000;
+
+        $display("goodbye!");
         $finish;
     end
 
