@@ -189,6 +189,71 @@ module test_pic;
     end
     endtask
 
+    task test_single_interrupt_with_read;
+    begin
+        $display( "write IMR" );
+        t_test = 8'h01;
+        t_data = 8'haa;
+        t_select = `SEL_IMR;
+        t_readwrite = `RW_WRITE;
+        # period;
+        $display( "read IMR back" );
+        t_test = 8'h02;
+        t_data = 8'hzz;
+        t_select = `SEL_IMR;
+        t_readwrite = `RW_READ;
+        # period;
+
+        $display( "test_single_interrupt_with_read");
+        t_intreq = 8'h04;
+        # period;
+
+        $display( "waiting for int=1" );
+        wait(t_int==1'b1);
+        $display( "got int=%x", t_int );
+
+        /* pulse the ack line, drop the incoming interrupt */
+        $display("pulsing intackN" );
+        t_intreq = 8'h00;
+        quick_pulse_intackN;
+
+        /* wait several clocks (TODO read some registers here) */
+        # period; # period; # period; # period;
+        # period; # period; # period; # period;
+
+        $display("read irr regnum=%x", `SEL_IRR );
+        t_test = 8'h05;
+        t_data = 8'hzz;
+        t_select = `SEL_IRR;
+        t_readwrite = `RW_READ;
+        # period;
+        $display("read isr regnum=%x", `SEL_ISR );
+        t_test = 8'h06;
+        t_data = 8'hzz;
+        t_select = `SEL_ISR;
+        t_readwrite = `RW_READ;
+        # period;
+        t_test = 8'h07;
+
+        # period; # period; # period; # period;
+        # period; # period; # period; # period;
+
+        /* pulse the ack line again */
+        $display("pulsing intackN" );
+//        t_intackN = 1'b0;
+//        # period;
+//        t_intackN = 1'b1;
+//        # period;
+        quick_pulse_intackN;
+
+        $display( "waiting for int=0" );
+        wait(t_int==1'b0);
+        # period;
+
+        $display( "test_single_interrupt done");
+    end
+    endtask
+
     initial
     begin
         $display("Hello, world");
@@ -205,12 +270,15 @@ module test_pic;
         debug_num = 1;
         # period;
 
-        debug_num = 10;
-        test_single_interrupt;
-        
-        debug_num = 20;
-        test_multiple_interrupt;
+//        debug_num = 10;
+//        test_single_interrupt;
 
+//        debug_num = 20;
+//        test_multiple_interrupt;
+
+        debug_num = 30;
+        test_single_interrupt_with_read;
+        
         # 1000;
 
         $display("goodbye!");

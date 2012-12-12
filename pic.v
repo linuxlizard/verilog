@@ -23,7 +23,10 @@ module pic
       input wire intackN,
 
       /* high when there is an interrupt pending */
-      output wire int_out );
+      output wire int_out,
+      
+      output wire [3:0] debug_state
+      );
 
     wire reset;
 
@@ -110,8 +113,8 @@ module pic
 //    assign isr_wr = select==`SEL_ISR ? ~readwrite : 1'b0;
 
     /* XXX temp rewire */
-    wire [7:0] foo_data;
-    assign foo_data = readwrite==`RW_WRITE ? 8'bzzzzzzzz : 
+    wire [7:0] register_data;
+    assign register_data = readwrite==`RW_WRITE ? 8'bzzzzzzzz : 
                         (select==`SEL_OCR ? ocr_data :
                         (select==`SEL_IMR ? imr_data :
                         (select==`SEL_IRR ? irr_data :
@@ -124,7 +127,7 @@ module pic
 
     /* index of most recently serviced interrupt */
 //    reg [2:0] irq_priority_idx = 4'h0;
-    `include "irq_list.vh"
+    `include "irq_list.v"
 
     reg [7:0] next_data = 8'hzz;
     assign data = next_data;
@@ -143,8 +146,8 @@ module pic
     reg [4:0] next_state;
     reg [4:0] curr_state;
 
-    wire [4:0] debug_state;
-    assign debug_state = curr_state;
+//    wire [4:0] debug_state;
+    assign debug_state = curr_state[3:0];
 
     /* pending interrupt number */
     reg [2:0] irq_num;
@@ -190,6 +193,11 @@ module pic
 
         next_data <= 8'hZZ;
 
+        if( readwrite==`RW_READ ) 
+        begin
+            next_data <= register_data;
+        end
+
         case( curr_state ) 
             STATE_RESET  :
             begin
@@ -201,23 +209,32 @@ module pic
             STATE_INIT  :
             begin
 //                $display( "state_init" );
-                if( intreq != 8'h00 ) 
+
+                irq_priority_list[ {5'b0, ocr_data[7:5]} ] = { 5'b0, ocr_data[2:0] };
+
+//                irq_priority_list[ {5{1'b0},ocr_data[7:5]} ] <= { 5{1'b0}, ocr_data[2:0] };
+                    
+
+                /* if we have new interrupt requests or previous requests from
+                 * last run, 
+                 */
+                if( (intreq & imr_data) != 8'h00 || irr_data != 8'h00 ) 
                 begin
                     /* we have an incoming interrupt */
 //                    $display( "incoming interrupt" );
 
                     next_state <= STATE_WAIT_FOR_ACK_1_LOW;
 
-                    /* write the incoming IRQ value to our IRR register */
+                    /* OR the incoming IRQ value to our IRR register */
                     irr_set <= 1'b1;
-                    irr_data_in <= intreq;
+                    irr_data_in <= (intreq & imr_data);
 
                     /* raise the interrupt pending line */
                     next_int <= 1'b1;
 
-                    /* find the highest priority interrupt to service */
-                    priority_queue_dump;
-                    next_irq_num <= find_irq( intreq );
+//                    /* find the highest priority interrupt to service */
+//                    priority_queue_dump;
+//                    next_irq_num <= find_irq( intreq );
                 end
             end
 
@@ -228,6 +245,10 @@ module pic
                 if( intackN==1'b0 ) 
                 begin
                     next_state <= STATE_WAIT_FOR_ACK_1_HIGH;
+
+                    /* find the highest priority interrupt to service */
+                    priority_queue_dump;
+                    next_irq_num <= find_irq( irr_data );
                 end
             end
 
@@ -239,7 +260,7 @@ module pic
                 irr_data_in <= 8'h01<<irq_num;
 
                 /* allow the CPU to drive the bus */
-                next_data <= 8'hZZ;
+//                next_data <= 8'hZZ;
 
                 /* set the bit of our chosen IRQ in the ISR register */
                 isr_set <= 1'b1;
