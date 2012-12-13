@@ -30,6 +30,7 @@ module pic
 
     wire reset;
 
+    /* Register connections */
     wire ocr_wr;
     wire [7:0]ocr_data;
 
@@ -51,6 +52,9 @@ module pic
      */
     assign reset = ~resetN;
 
+    /* re-use my register component for the OCR and IMR registers because
+     * they're general purpose 8-bit read/write
+     */
     Register #(8) OCR
         (.clk(clk),
          .load(ocr_wr),
@@ -112,7 +116,7 @@ module pic
 //    assign irr_wr = select==`SEL_IRR ? ~readwrite : 1'b0;
 //    assign isr_wr = select==`SEL_ISR ? ~readwrite : 1'b0;
 
-    /* XXX temp rewire */
+    /* route register data to this wire on register reads */
     wire [7:0] register_data;
     assign register_data = readwrite==`RW_WRITE ? 8'bzzzzzzzz : 
                         (select==`SEL_OCR ? ocr_data :
@@ -125,10 +129,14 @@ module pic
      */
     reg [7:0] irq_priority_list [7:0];
 
-    /* index of most recently serviced interrupt */
-//    reg [2:0] irq_priority_idx = 4'h0;
+    /* irq_list.v contains tasks & functions for manipulating the
+     * irq_priority_list 
+     */
     `include "irq_list.v"
 
+    /* next_data is driven via the PIC state machine. Can be driven to
+     * register_data on register read/write or to the vector
+     */
     reg [7:0] next_data = 8'hzz;
     assign data = next_data;
 
@@ -153,6 +161,7 @@ module pic
     reg [2:0] irq_num;
     reg [2:0] next_irq_num;
 
+    /* the output signal int_out is driven by the state machine */
     reg next_int;
     reg int;
     assign int_out = int;
@@ -174,7 +183,7 @@ module pic
     end
 
     /*
-     * Interrupt control logic
+     * Interrupt control logic state machine
      */
     always @(*)
     begin
@@ -193,6 +202,10 @@ module pic
 
         next_data <= 8'hZZ;
 
+        /* Not sure if this is correct; seems dangerous. If we're doing a
+         * register read, default to driving the registers' outputs onto the
+         * bus
+         */
         if( readwrite==`RW_READ ) 
         begin
             next_data <= register_data;
@@ -212,9 +225,6 @@ module pic
 
                 irq_priority_list[ {5'b0, ocr_data[7:5]} ] = { 5'b0, ocr_data[2:0] };
 
-//                irq_priority_list[ {5{1'b0},ocr_data[7:5]} ] <= { 5{1'b0}, ocr_data[2:0] };
-                    
-
                 /* if we have new interrupt requests or previous requests from
                  * last run, 
                  */
@@ -231,10 +241,6 @@ module pic
 
                     /* raise the interrupt pending line */
                     next_int <= 1'b1;
-
-//                    /* find the highest priority interrupt to service */
-//                    priority_queue_dump;
-//                    next_irq_num <= find_irq( intreq );
                 end
             end
 
@@ -259,8 +265,7 @@ module pic
                 irr_clr <= 1'b1;
                 irr_data_in <= 8'h01<<irq_num;
 
-                /* allow the CPU to drive the bus */
-//                next_data <= 8'hZZ;
+                /* cpu will drive the bus here */
 
                 /* set the bit of our chosen IRQ in the ISR register */
                 isr_set <= 1'b1;

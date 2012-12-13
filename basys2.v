@@ -1,3 +1,12 @@
+/* Simulation construct to mimic the Baysys2 FPGA board.
+ *
+ * David Poole
+ * ECE 530  Fall 2012
+ *
+ * Contents of this module will change depending on which assignment I'm
+ * currently working on.
+ */
+
 `timescale 1 ns / 10 ps
 
 `include "mux_sel.vh"
@@ -23,6 +32,7 @@ module basys2;
     parameter period = 10;
     parameter half_period = 5;
 
+    /* make names the same as the symbols in the synthesis UCF */
     reg MCLK = 0;
     reg [7:0] sw = 8'd0;
     reg [3:0] btn = `BTN_RESET; // reset
@@ -32,6 +42,7 @@ module basys2;
     wire [3:0] an;
     wire dp;
 
+    /* for test/debug; set this number so I know where I am in the code */
     integer debug_num = 0;
 
     /* This is the clock */
@@ -40,6 +51,7 @@ module basys2;
         #half_period MCLK = ~MCLK;
     end
 
+    /* PIO ports on the Basys2 board (external IO) */
     wire [87:72] PIO;
 
     top_pic run_top_pic
@@ -52,6 +64,7 @@ module basys2;
           .an(an),
           .dp(dp) );
 
+    /* convenience function to do rom step button press/release */
     task step_rom;
     begin
         btn = `BTN_ROM_EXE; # period;
@@ -61,6 +74,7 @@ module basys2;
     end
     endtask
 
+    /* convenience function to do intackN button press/release */
     task push_intack_button;
     begin
         btn = `BTN_INT_ACK;

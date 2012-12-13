@@ -14,7 +14,7 @@ module top_pic
       input [7:0] sw,
       input [3:0] btn,
 
-      /* JA 1,2,3,4 (used with debugging) */
+      /* (used with debugging) */
       output [87:72] PIO, 
 
       output [7:0] Led,
@@ -108,7 +108,14 @@ module top_pic
 
     /*
      *  Incoming IRQ with switches. Use btn[1] to trigger irq after choosing
-     *  what switches are set.
+     *  what switches are set. I don't want to race the incoming interrupt
+     *  signals (trying to set switches simultaneously). I want a reliable way
+     *  to trigger multiple simultaneous interrupts.
+     *
+     *  1) Set switches.
+     *  2) Push button.
+     *  3) Requested interrupts are stored in PIC so switches can now be
+     *     disabled.
      */
     /* SW[7:0] are IRQ */
     wire [7:0] intreq;
@@ -137,6 +144,10 @@ module top_pic
     /* data interface -- inout so is absolutely crazy bonkers nightmare :-O */
     wire [7:0] data_wire;
 
+    /* sharing this line between top_pic and pic so must be very sure both
+     * sides agree who owns the bus. If we (top_pic) are doing a read, we own
+     * the bus. All other times, pic owns the bus.
+     */
     assign data_wire = register_readwrite==`RW_READ ? 8'hzz : register_data;
 
     /*
@@ -156,13 +167,15 @@ module top_pic
          // output(s)
          .int_out(int),
          
+         /* test/debug signals for logic analyzer */
          .debug_state(pic_debug_state) 
          );
 
     /*
-     *  The PIC Test ROM
+     *  The PIC Test ROM and execution state machine
      */
 
+    /* execute single "instruction" from rom */
     wire rom_exe;
 
     edge_to_pulse rom_step_edge_to_pulse
@@ -180,6 +193,7 @@ module top_pic
     reg [2:0] rom_state;
     reg [2:0] next_rom_state;
 
+    /* fields from the ROM 11-bit data value */
     reg rom_rw_flag;
     reg next_rom_rw_flag;
 
@@ -217,6 +231,7 @@ module top_pic
         end
     end
 
+    /* ROM state machine. Drives the ROM address forward on rom_exe toggle. */
     always @(*) 
     begin
         next_rom_address <= rom_address;
@@ -262,12 +277,8 @@ module top_pic
                 /* advance to next rom address */
                 next_rom_address <= rom_address + 8'h01;
                 register_readwrite <= `RW_READ;
-//                register_select <= `SEL_ISR;
-//                register_data <= 8'hzz;
 
                 next_rom_rw_flag <= `RW_READ;
-//                next_rom_regnum <= `SEL_OCR;
-//                next_rom_reg_data <= 8'hzz;
             end
 
             default:
@@ -276,7 +287,10 @@ module top_pic
             end
         endcase
     end
-
+    
+    /* The ROM itself.  Not sure I'm generate a ROM correctly here. I'm basing
+     * this code off some samples in Xilinx.
+     */
     always @(rom_address,rom_en)
     begin
         if( rom_en==1'b1 )
@@ -340,7 +354,6 @@ module top_pic
 `endif
         ( .rst(reset),
           .mclk(MCLK),
-//          .word_in( ac_key_buffer ),
           .word_in( { rom_address, data_wire } ),
           .display_mask_in(4'b1111),
 

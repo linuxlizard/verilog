@@ -54,6 +54,7 @@ module test_pic;
 
     task test_registers;
     begin
+        /* test simple register read/write interface via continuous assignment */
         t_test = 8'h01;
         t_data = 8'hzz;
         t_select = `SEL_OCR;
@@ -93,6 +94,9 @@ module test_pic;
     end
     endtask
 
+    /*
+     *  Interrupt Ack with no delay between edges
+     */
     task quick_pulse_intackN;
     begin
         $display("pulsing intackN" );
@@ -103,6 +107,7 @@ module test_pic;
     end
     endtask
 
+    /* Run a test of a single interrupt. No register reads during the intacks.  */
     task test_single_interrupt;
     begin
         $display( "test_single_interrupt");
@@ -116,10 +121,6 @@ module test_pic;
         /* pulse the ack line, drop the incoming interrupt */
         $display("pulsing intackN" );
         t_intreq = 8'h00;
-//        t_intackN = 1'b0;
-//        # period;
-//        t_intackN = 1'b1;
-//        # period;
         quick_pulse_intackN;
 
         /* wait several clocks (TODO read some registers here) */
@@ -128,10 +129,6 @@ module test_pic;
 
         /* pulse the ack line again */
         $display("pulsing intackN" );
-//        t_intackN = 1'b0;
-//        # period;
-//        t_intackN = 1'b1;
-//        # period;
         quick_pulse_intackN;
 
         $display( "waiting for int=0" );
@@ -142,6 +139,9 @@ module test_pic;
     end
     endtask
 
+    /* run a test with multiple simultaneous pending interrupts. No register
+     * reads yet.
+     */
     task test_multiple_interrupt;
     begin
         $display( "test_multiple_interrupt" );
@@ -189,6 +189,7 @@ module test_pic;
     end
     endtask
 
+    /* Trigger an interrupt. Read registers between the ack pulses */
     task test_single_interrupt_with_read;
     begin
         $display( "write IMR" );
@@ -240,10 +241,6 @@ module test_pic;
 
         /* pulse the ack line again */
         $display("pulsing intackN" );
-//        t_intackN = 1'b0;
-//        # period;
-//        t_intackN = 1'b1;
-//        # period;
         quick_pulse_intackN;
 
         $display( "waiting for int=0" );
